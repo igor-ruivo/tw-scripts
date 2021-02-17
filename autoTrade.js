@@ -14,7 +14,7 @@
 
 //configs
 const merchantCapacity = 1000;
-const minTrade = 400;
+const minTrade = 500;
 const maxDifferencePercentage = 60;
 const roundQuantitiesTo = 100;
 const blockResourceTrade = {
@@ -119,9 +119,9 @@ function sumResources(a, b) {
 
 function getPendingOngoingResources() {
 	const incommingElement = document.getElementById("market_status_bar")?.children[1]?.querySelector("th");
-	const incommingWood = incommingElement?.querySelector(".icon.header.wood")?.nextSibling?.textContent ?? 0;
-	const incommingStone = incommingElement?.querySelector(".icon.header.stone")?.nextSibling?.textContent ?? 0;
-	const incommingIron = incommingElement?.querySelector(".icon.header.iron")?.nextSibling?.textContent ?? 0;
+	const incommingWood = incommingElement?.querySelector(".icon.header.wood")?.parentElement?.innerText?.replace(".", "") ?? 0;
+	const incommingStone = incommingElement?.querySelector(".icon.header.stone")?.parentElement?.innerText?.replace(".", "") ?? 0;
+	const incommingIron = incommingElement?.querySelector(".icon.header.iron")?.parentElement?.innerText?.replace(".", "") ?? 0;
 	return {
 		wood: Number(incommingWood),
 		stone: Number(incommingStone),
@@ -148,7 +148,7 @@ function getTheoreticalResources() {
 function trade(offer, want, amount) {
 	document.getElementById("res_sell_" + offer).click();
 	document.getElementById("res_buy_" + want).click();
-	
+
 	document.querySelector("[name='multi']").value = 1;
 
 	document.getElementById("res_sell_amount").value = amount;
