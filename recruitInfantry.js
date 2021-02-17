@@ -33,7 +33,7 @@ function getDate() {
 }
 
 function nextIteration() {
-	const availableUnits = document.getElementById("axe_0_a")?.innerText[1];
+	const availableUnits = document.getElementById("axe_0_a")?.innerText.slice(1, -1);
 	if(!availableUnits) {
 		console.log("Vikings ainda não foram pesquisados.");
 		return;
