@@ -61,7 +61,7 @@ function nextIteration() {
 }
 
 function buildingAlreadyInQueue(build) {
-	return userBuildList.some(b => b.building === build) || !!document.getElementById("buildqueue").querySelector(".lit.nodrag.buildorder_" + build);
+	return userBuildList.some(b => b.building === build) || !!document.getElementById("buildqueue")?.querySelector(".lit.nodrag.buildorder_" + build);
 }
 
 function checkStorageForUpgrade(currentLevel) {

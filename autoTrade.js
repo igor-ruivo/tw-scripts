@@ -102,6 +102,7 @@ function checkIfShouldDeleteOffers(rate, amountToTrade, storageSpace) {
 
 		setTimeout(function () {
 			bestOption.checkbox.click();
+			document.querySelector("[name='multi']").value = 1;
 			document.getElementsByClassName("btn-cancel")[0].click();
 		}, 30000);
 		return true;
