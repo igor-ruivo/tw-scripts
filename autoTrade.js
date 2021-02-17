@@ -65,14 +65,23 @@ function getPendingOngoingResources() {
 	}
 }
 
+function getAvailableResources() {
+	return {
+		wood: Number(document.getElementById("wood").innerText),
+		stone: Number(document.getElementById("stone").innerText),
+		iron: Number(document.getElementById("iron").innerText)
+	};
+}
+
 function getTheoreticalResources() {
+	const availableResources = getAvailableResources();
 	const ongoingResources = getPendingOngoingResources();
 	const incommingResources = getPendingIncommingResources();
 
 	return {
-		wood: Number(document.getElementById("wood").innerText) + ongoingResources.wood + incommingResources.wood,
-		stone: Number(document.getElementById("stone").innerText) + ongoingResources.stone + incommingResources.stone,
-		iron: Number(document.getElementById("iron").innerText) + ongoingResources.iron + incommingResources.iron
+		wood: availableResources.wood + ongoingResources.wood + incommingResources.wood,
+		stone: availableResources.stone + ongoingResources.stone + incommingResources.stone,
+		iron: availableResources.iron + ongoingResources.iron + incommingResources.iron
 	};
 }
 
@@ -143,6 +152,12 @@ function nextIteration() {
 	const availableMerchants = Number(document.getElementById("market_merchant_available_count").innerText);
 	if(availableMerchants === 0) {
 		console.log("Sem mercadores disponíveis.");
+		return;
+	}
+
+	const availableResources = getAvailableResources();
+	if(availableResources[mostResource.resource] < amountToTrade) {
+		console.log("Não há recursos suficientes no armazém.");
 		return;
 	}
 
