@@ -102,7 +102,6 @@ function checkIfShouldDeleteOffers(rate, amountToTrade, storageSpace) {
 
 		setTimeout(function () {
 			bestOption.checkbox.click();
-			document.querySelector("[name='multi']").value = 1;
 			document.getElementsByClassName("btn-cancel")[0].click();
 		}, 30000);
 		return true;
@@ -149,6 +148,8 @@ function getTheoreticalResources() {
 function trade(offer, want, amount) {
 	document.getElementById("res_sell_" + offer).click();
 	document.getElementById("res_buy_" + want).click();
+	
+	document.querySelector("[name='multi']").value = 1;
 
 	document.getElementById("res_sell_amount").value = amount;
 	document.getElementById("res_buy_amount").value = amount;
