@@ -9,7 +9,6 @@
 // @grant               GM_addStyle
 // @grant               GM_getValue
 // @grant               unsafeWindow
-// @require             http://code.jquery.com/jquery-1.12.4.min.js
 // ==/UserScript==
 
 //configs
@@ -22,6 +21,7 @@ const maxStorageLevel = 30;
 const maxFarmLevel = 30;
 const maxBuildQueueLength = 2;
 const buildQueueOffset = 2;
+const offsetTimeInMillis = 3000;
 
 const levels = loadBuildingsAndLevels();
 const userBuildList = loadUserBuildList();
@@ -35,11 +35,11 @@ let clickedTask = {};
 	setTimeout(function () {
 		nextIteration();
 		console.log("Reload dentro de " + Math.round(delay / 1000) + " segundos...");
-	}, 3000);
+	}, offsetTimeInMillis);
 
 	setTimeout(function () {
-		location.reload();
-	}, delay);
+		window.location.reload(true);
+	}, delay + offsetTimeInMillis);
 })();
 
 function getDate() {

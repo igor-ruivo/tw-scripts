@@ -9,7 +9,6 @@
 // @grant               GM_addStyle
 // @grant               GM_getValue
 // @grant               unsafeWindow
-// @require             http://code.jquery.com/jquery-1.12.4.min.js
 // ==/UserScript==
 
 //configs
@@ -17,6 +16,7 @@ const merchantCapacity = 1000;
 const minTrade = 500;
 const maxDifferencePercentage = 60;
 const roundQuantitiesTo = 100;
+const offsetTimeInMillis = 3000;
 const blockResourceTrade = {
 	wood: false,
 	stone: false,
@@ -30,11 +30,11 @@ const blockResourceTrade = {
 		if(nextIteration()) {
 			console.log("Reload dentro de 10 minutos...");
 		}
-	}, Math.floor(Math.random() * 5000));
+	}, offsetTimeInMillis);
 
 	setTimeout(function () {
-		location.reload();
-	}, 1000 * 60 * 10);
+		window.location.reload(true);
+	}, 1000 * 60 * 10 + offsetTimeInMillis);
 })();
 
 function getDate() {
@@ -96,7 +96,7 @@ function checkIfShouldDeleteOffers(rate, amountToTrade, storageSpace) {
 			bestOption.checkbox = checkboxElement;
 		}
 	});
-	
+
 	if(bestOption.checkbox) {
 		console.log("A apagar uma oferta dentro de 30 segundos...");
 
@@ -194,7 +194,7 @@ function nextIteration() {
 	const resourcesInfo = compareResources(resources);
 	const mostResource = resourcesInfo.mostResource;
 	const leastResource = resourcesInfo.leastResource;
-	
+
 	console.log("Recurso mais ambundante: " + mostResource.resource + ", (" + mostResource.quantity + ").");
 	console.log("Recurso menos ambundante: " + leastResource.resource + ", (" + leastResource.quantity + ").");
 

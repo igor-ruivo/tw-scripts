@@ -9,14 +9,15 @@
 // @grant               GM_addStyle
 // @grant               GM_getValue
 // @grant               unsafeWindow
-// @require             http://code.jquery.com/jquery-1.12.4.min.js
 // ==/UserScript==
 
 //configs
 const pairWithInfantry = false;
 const avoidUnevenResources = true;
-const maxLightCavalry = 5;
+const maxLightCavalryTrainPerTry = 5;
 const averageMinutesReloadTime = 5;
+const maxLightCavalry = 3000;
+const offsetTimeInMillis = 3000;
 
 (function () {
 	'use strict';
@@ -25,11 +26,11 @@ const averageMinutesReloadTime = 5;
 		if(nextIteration()) {
 			console.log("Reload dentro de 10 minutos...");
 		}
-	}, Math.floor(Math.random() * 5000));
+	}, offsetTimeInMillis);
 
 	setTimeout(function () {
-		location.reload();
-	}, 1000 * 60 * 10);
+		window.location.reload(true);
+	}, 1000 * 60 * 10 + offsetTimeInMillis);
 })();
 
 function compareResources(resources) {
@@ -79,6 +80,10 @@ function recruit(units) {
 	}
 }
 
+function getNumberOfTroops() {
+	return Number(document.getElementById("light_0_cost_wood").closest("tr").children[2].innerText.split("/")[1]);
+}
+
 function nextIteration() {
 	const availableUnits = document.getElementById("light_0_a")?.innerText?.slice(1, -1);
 	if(!availableUnits) {
@@ -86,7 +91,15 @@ function nextIteration() {
 		return true;
 	}
 
-	const units = Math.min(maxLightCavalry, Number(availableUnits));
+	const currentTroops = getNumberOfTroops();
+	if(currentTroops >= maxLightCavalry) {
+		console.log("Já foram recrutadas as unidades planeadas (" + maxLightCavalry + ").");
+		return true;
+	}
+
+	const missingTroops = Math.max(0, maxLightCavalry - currentTroops);
+
+	const units = Math.min(Math.min(maxLightCavalryTrainPerTry, Number(availableUnits)), missingTroops);
 
 	if(avoidUnevenResources) {
 		const lightPrices = {
@@ -115,7 +128,7 @@ function nextIteration() {
 	recruit(units);
 
 	const delay = Math.floor(Math.random() * 1000 * 60 + averageMinutesReloadTime * 60 * 1000);
-	
+
 	if(pairWithInfantry) {
 		console.log("A redirecionar para o quartel dentro de " + Math.round(delay / 1000 / 60) + " minutos...");
 		setTimeout(function () {
