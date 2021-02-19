@@ -87,7 +87,7 @@ function checkFarmForUpgrade(currentLevel) {
 		const currentFarmPercentage = Math.round(currentPopulation / maxPopulation * 100);
 		console.log("Fazenda a " + currentFarmPercentage + "% (Nível " + currentLevel + ")");
 		if (currentFarmPercentage >= maxFarmPercentage && !buildingAlreadyInQueue("farm")) {
-			userBuildList.push({ building: "farm", level: 30 });
+			userBuildList.unshift({ building: "farm", level: 30 });
 			console.log("Fazenda adicionada à lista...");
 		}
 	}
