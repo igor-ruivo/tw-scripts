@@ -112,7 +112,7 @@ function getNextBuildTask() {
 		checkFarmForUpgrade(levels["farm"] - 1);
 	}
 	if ($('[id="buildqueue"]').find('tr').length >= buildQueueOffset + maxBuildQueueLength) {
-		console.log("Já há " + maxBuildQueueLength + " ordens ou mais na fila de construição. Não vou fazer nada agora.");
+		console.log("Já há " + maxBuildQueueLength + " ordens ou mais na fila de construção. Não vou fazer nada agora.");
 		return undefined;
 	}
 	console.log(levels);
