@@ -63,9 +63,9 @@ function nextIteration() {
       const columns = line.querySelectorAll("td");
       const iconColumn = columns[2];
       const icon = iconColumn.children[0];
-      const fullLoot = icon.getAttribute("src").endsWith("max_loot/1.png");
+      const partialLoot = icon?.getAttribute("src")?.endsWith("max_loot/0.png");
       const buttonA = line.querySelector(".farm_icon.farm_icon_a");
       const buttonB = line.querySelector(".farm_icon.farm_icon_b");
-      farm(i, !fullLoot ? buttonB : buttonA);
+      farm(i, partialLoot ? buttonB : buttonA);
    }
 }
