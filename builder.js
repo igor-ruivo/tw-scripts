@@ -19,12 +19,13 @@ const maxStoragePercentage = 98;
 const maxFarmPercentage = 95;
 const maxStorageLevel = 30;
 const maxFarmLevel = 30;
-const maxBuildQueueLength = 2;
+const maxBuildQueueLength = 5;
 const buildQueueOffset = 2;
 const offsetTimeInMillis = 3000;
 
 const levels = loadBuildingsAndLevels();
 const userBuildList = loadUserBuildList();
+
 let clickedTask = {};
 
 (function () {
@@ -38,7 +39,8 @@ let clickedTask = {};
 	}, offsetTimeInMillis);
 
 	setTimeout(function () {
-		window.location.reload(true);
+		const nextVillageButton = document.getElementById("village_switch_right");
+		nextVillageButton ? nextVillageButton.click() : window.location.reload(true);
 	}, delay + offsetTimeInMillis);
 })();
 
@@ -93,11 +95,16 @@ function checkFarmForUpgrade(currentLevel) {
 	}
 }
 
+function getCurrentVillage() {
+	const villageName = document.getElementById("menu_row2").querySelector("b").innerText.split(" ")[0];
+	return villageName.slice(1, villageName.indexOf(")"));
+}
+
 function removeCompletedTasks(list) {
 	const newBuildList = [];
 	for (let i = 0; i < list.length; i++) {
 		const currentBuilding = list[i];
-		if (currentBuilding.level >= levels[currentBuilding.building]) {
+		if (getCurrentVillage() === currentBuilding.village && currentBuilding.level >= levels[currentBuilding.building]) {
 			newBuildList.push(currentBuilding);
 		}
 	}
@@ -153,9 +160,23 @@ function loadUserBuildList() {
 	const buildList = [];
 
 	//change
-	buildList.push({ building: "wood", level: 30 });
-	buildList.push({ building: "stone", level: 30 });
-	buildList.push({ building: "iron", level: 30 });
+	buildList.push({ village: "746|588", building: "barracks", level: 25 });
+	buildList.push({ village: "746|588", building: "stable", level: 20 });
+	buildList.push({ village: "746|588", building: "wood", level: 30 });
+	buildList.push({ village: "746|588", building: "stone", level: 30 });
+	buildList.push({ village: "746|588", building: "iron", level: 30 });
+	buildList.push({ village: "746|588", building: "wall", level: 20 });
+//
+	buildList.push({ village: "743|587", building: "main", level: 10 });
+	buildList.push({ village: "743|587", building: "church", level: 1 });
+	buildList.push({ village: "743|587", building: "storage", level: 10 });
+	buildList.push({ village: "743|587", building: "wood", level: 30 });
+	buildList.push({ village: "743|587", building: "stone", level: 30 });
+	buildList.push({ village: "743|587", building: "iron", level: 30 });
+	buildList.push({ village: "743|587", building: "barracks", level: 5 });
+	buildList.push({ village: "743|587", building: "smith", level: 5 });
+	buildList.push({ village: "743|587", building: "stable", level: 5 });
+	buildList.push({ village: "743|587", building: "market", level: 1 });
 
 	return removeCompletedTasks(buildList);
 }
