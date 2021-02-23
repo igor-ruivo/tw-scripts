@@ -160,23 +160,24 @@ function loadUserBuildList() {
 	const buildList = [];
 
 	//change
-	buildList.push({ village: "746|588", building: "barracks", level: 25 });
-	buildList.push({ village: "746|588", building: "stable", level: 20 });
 	buildList.push({ village: "746|588", building: "wood", level: 30 });
 	buildList.push({ village: "746|588", building: "stone", level: 30 });
 	buildList.push({ village: "746|588", building: "iron", level: 30 });
-	buildList.push({ village: "746|588", building: "wall", level: 20 });
+	buildList.push({ village: "746|588", building: "barracks", level: 25 });
+	buildList.push({ village: "746|588", building: "stable", level: 20 });
+	buildList.push({ village: "746|588", building: "market", level: 20 });
 //
-	buildList.push({ village: "743|587", building: "main", level: 10 });
-	buildList.push({ village: "743|587", building: "church", level: 1 });
-	buildList.push({ village: "743|587", building: "storage", level: 10 });
+	buildList.push({ village: "743|587", building: "snob", level: 1 });
 	buildList.push({ village: "743|587", building: "wood", level: 30 });
 	buildList.push({ village: "743|587", building: "stone", level: 30 });
 	buildList.push({ village: "743|587", building: "iron", level: 30 });
-	buildList.push({ village: "743|587", building: "barracks", level: 5 });
-	buildList.push({ village: "743|587", building: "smith", level: 5 });
-	buildList.push({ village: "743|587", building: "stable", level: 5 });
-	buildList.push({ village: "743|587", building: "market", level: 1 });
-
+	buildList.push({ village: "743|587", building: "smith", level: 20 });
+	buildList.push({ village: "743|587", building: "market", level: 10 });
+//740|584
+    buildList.push({ village: "740|584", building: "main", level: 20 });
+    buildList.push({ village: "740|584", building: "storage", level: 10 });
+    buildList.push({ village: "746|588", building: "wood", level: 30 });
+	buildList.push({ village: "746|588", building: "stone", level: 30 });
+	buildList.push({ village: "746|588", building: "iron", level: 30 });
 	return removeCompletedTasks(buildList);
 }
