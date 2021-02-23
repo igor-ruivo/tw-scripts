@@ -18,26 +18,54 @@ const helpingSystem = [
 		saveStoragePercentage: 0,
 		receivers: [
 			{
-				village: "743|587",
-				fillStoragePercentage: 30,
-				minimumToSend: 3000
-			},
-			{
 				village: "740|584",
-				fillStoragePercentage: 80,
-				minimumToSend: 500
+				fillStoragePercentage: 70,
+				minimumToSend: 1000
 			}
 		]
-	}
+	},
+	{
+		sender: "743|587",
+		saveStoragePercentage: 30,
+		receivers: [
+			{
+				village: "740|584",
+				fillStoragePercentage: 70,
+				minimumToSend: 1000
+			}
+		]
+	},
 ];
 
+const singleTradeForEachVillageAtTime = false;
 const merchantCapacity = 1000;
 const offsetTimeInMillis = 3000;
+let resourcesPeekDate;
 
 (function () {
 	'use strict';
 
 	garbageCollector();
+
+	const helperSystemStatus = checkForCorruptedHelpingSystem();
+	switch(helperSystemStatus) {
+		case 1:
+			console.log("helpingSystem inválido. Sender duplicado.");
+			break;
+		case 2:
+			console.log("helpingSystem inválido. Receiver duplicado num sender.");
+			break;
+		default:
+			break;
+	}
+
+	if(helperSystemStatus !== 0) {
+		console.log("Reload em 10 minutos.");
+		setTimeout(function () {
+			window.location.reload(true);
+		}, 10 * 60 * 1000);
+		return;
+	}
 
 	if(!document.getElementById("village_switch_right")) {
 		console.log("A tua conta não é premium ou só possuis uma aldeia.");
@@ -49,10 +77,10 @@ const offsetTimeInMillis = 3000;
 	}
 
 	if(!villageIsSupplier()) {
-		console.log("Aldeia sem destinatários... A visitar a próxima aldeia dentro de 10 segundos.");
+		console.log("Aldeia sem destinatários... A visitar a próxima aldeia dentro de 45 segundos.");
 		setTimeout(function () {
 			document.getElementById("village_switch_right").click();
-		}, 10 * 1000);
+		}, 45 * 1000);
 		return;
 	}
 
@@ -95,6 +123,7 @@ const offsetTimeInMillis = 3000;
 	}
 
 	setTimeout(function () {
+		resourcesPeekDate = new Date();
 		document.getElementsByClassName("target-select-links")[0]?.children[1]?.click();
 	}, offsetTimeInMillis);
 
@@ -112,6 +141,26 @@ const offsetTimeInMillis = 3000;
 		}
 	}, offsetTimeInMillis * 2);
 })();
+
+function checkForCorruptedHelpingSystem() {
+	const senders = new Map();
+	helpingSystem.forEach(s => senders.set(s.sender, s.sender));
+	if(senders.size !== helpingSystem.length) {
+		return 1;
+	}
+	for(let i = 0; i < helpingSystem.length; i++) {
+		const s = helpingSystem[i];
+		const destinations = new Map();
+		for(let j = 0; j < s.receivers.length; j++) {
+			const r = s.receivers[j];
+			destinations.set(r.village, r.village);
+		}
+		if(destinations.size !== s.receivers.length) {
+			return 2;
+		}
+	}
+	return 0;
+}
 
 function garbageCollector() {
 	const scriptStorage = Array.from(Object.keys(localStorage)).filter(k => k.startsWith("$$") && k.endsWith("$$") && k.includes("|"));
@@ -177,13 +226,21 @@ function getHelpedVillageResources(helpedVillage, coords) {
 	}
 	const incommings = localStorage["$$" + coords + "$$"];
 	if(!!incommings) {
-		JSON.parse(incommings).filter(i => i.date + i.tripTime > Date.parse(new Date())).forEach(i => {
+		JSON.parse(incommings).filter(i => i.date + i.tripTime > Date.parse(resourcesPeekDate)).forEach(i => {
 			baseResources.wood += i.resources.wood;
 			baseResources.stone += i.resources.stone;
 			baseResources.iron += i.resources.iron;
 		});
 	}
 	return baseResources;
+}
+
+function villageIsAlreadySupplying(coords) {
+	const memory = localStorage["$$" + coords + "$$"];
+	if(!memory) {
+		return false;
+	}
+	return JSON.parse(memory).some(m => m.sender === getCurrentVillage() && m.date + m.tripTime > Date.parse(new Date()));
 }
 
 function nextIteration() {
@@ -209,6 +266,10 @@ function nextIteration() {
 	villages.forEach(v => {
 		const coords = v.querySelectorAll("td")[3].innerText;
 		if(villageIsSupplier() && villageIsSupplierOfSpecificVillage(coords)) {
+			if(singleTradeForEachVillageAtTime && villageIsAlreadySupplying(coords)) {
+				console.log("A aldeia já está a enviar recursos para " + coords);
+				return;
+			}
 			villagesToBeHelped.push(v);
 		}
 	});
@@ -273,7 +334,7 @@ function nextIteration() {
 		}, 2000);
 		break;
 	}
-	
+
 	console.log("Esta aldeia não tem mais aldeias a fornecer");
 	return true;
 }

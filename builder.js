@@ -63,7 +63,8 @@ function nextIteration() {
 }
 
 function buildingAlreadyInQueue(build) {
-	return userBuildList.some(b => b.building === build) || !!document.getElementById("buildqueue")?.querySelector(".lit.nodrag.buildorder_" + build);
+	return userBuildList.some(b => b.building === build && b.village === getCurrentVillage()) ||
+	!!document.getElementById("buildqueue")?.querySelector(".buildorder_" + build);
 }
 
 function checkStorageForUpgrade(currentLevel) {
@@ -176,8 +177,8 @@ function loadUserBuildList() {
 //740|584
     buildList.push({ village: "740|584", building: "main", level: 20 });
     buildList.push({ village: "740|584", building: "storage", level: 10 });
-    buildList.push({ village: "746|588", building: "wood", level: 30 });
-	buildList.push({ village: "746|588", building: "stone", level: 30 });
-	buildList.push({ village: "746|588", building: "iron", level: 30 });
+    buildList.push({ village: "740|584", building: "wood", level: 30 });
+	buildList.push({ village: "740|584", building: "stone", level: 30 });
+	buildList.push({ village: "740|584", building: "iron", level: 30 });
 	return removeCompletedTasks(buildList);
 }
