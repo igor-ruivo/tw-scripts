@@ -113,13 +113,14 @@ function checkForCorruptedFarmVillages() {
    if(coordinates.size !== farmVillages.length) {
 		return 1;
 	}
-   farmVillages.forEach(v => {
+   for(let i = 0; i < farmVillages.length; i++) {
+      const v = farmVillages[i];
       const modelASum = Object.values(v.A).reduce((a, b) => a + b, 0);
       const modelBSum = Object.values(v.B).reduce((a, b) => a + b, 0);
-      if(modelASum === 0 ||modelBSum ) {
+      if(modelASum === 0 || modelBSum === 0) {
          return 2;
       }
-   });
+   }
    return 0;
 }
 
