@@ -18,7 +18,7 @@ const waitTimePerPageOrVillageChange = 5000;
 const farmVillages = [
    {
       coordinates: "746|588",
-      A: { spear: 0, sword: 0, axe: 0, spy: 0, light: 4, heavy: 0 },
+      A: { spear: 0, sword: 0, axe: 0, spy: 0, light: 5, heavy: 0 },
       B: { spear: 0, sword: 0, axe: 0, spy: 0, light: 2, heavy: 0 }
    },
    {
@@ -39,7 +39,7 @@ const troopsSpeed = {
 
 let stopIteration = false;
 const nPages = Number(document.getElementsByClassName("paged-nav-item").length / 2);
-const currentPageIndex = Number(document.querySelector("strong").innerText.trim().slice(1, -1)) - 1;
+const currentPageIndex = nPages !== 0 ? Number(document.querySelector("strong").innerText.trim().slice(1, -1)) - 1 : 0;
 
 (function () {
    'use strict';
@@ -104,7 +104,7 @@ const currentPageIndex = Number(document.querySelector("strong").innerText.trim(
          const nextVillageButton = document.getElementById("village_switch_right");
          nextVillageButton ? nextVillageButton.click() : window.location.reload(true);
       }, timer);
-   }, setupIntervalTimerInMillis * 6);
+   }, setupIntervalTimerInMillis * 8);
 })();
 
 function checkForCorruptedFarmVillages() {
@@ -136,6 +136,7 @@ function updateABForCurrentVillage(currentModel, userModel) {
       currentModel[0].click();
    }
 }
+
 
 function setup() {
    const currentVillageSettings = farmVillages.filter(v => v.coordinates === getCurrentVillage())[0];
@@ -169,8 +170,22 @@ function setup() {
    }, setupIntervalTimerInMillis * 4);
 
    setTimeout(function () {
-      updateABForCurrentVillage(currentB, currentVillageSettings.B);
+      const all_village_checkbox = document.getElementById("all_village_checkbox");
+      if (all_village_checkbox.checked) {
+         all_village_checkbox.click();
+      }
    }, setupIntervalTimerInMillis * 5);
+
+   setTimeout(function () {
+      updateABForCurrentVillage(currentB, currentVillageSettings.B);
+   }, setupIntervalTimerInMillis * 6);
+
+   setTimeout(function () {
+      const full_hauls_checkbox = document.getElementById("full_hauls_checkbox");
+      if (full_hauls_checkbox.checked) {
+         full_hauls_checkbox.click();
+      }
+   }, setupIntervalTimerInMillis * 7);
 }
 
 function isErrorBeingShown() {
