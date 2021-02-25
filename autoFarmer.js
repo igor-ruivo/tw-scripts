@@ -45,24 +45,24 @@ const currentPageIndex = nPages !== 0 ? Number(document.querySelector("strong").
    'use strict';
 
    const status = checkForCorruptedFarmVillages();
-   switch(status) {
-		case 1:
-			console.log("farmVillages inválido. Aldeia duplicada.");
-			break;
-		case 2:
-			console.log("farmVillages inválido. Há modelos sem tropas.");
-			break;
-		default:
-			break;
-	}
+   switch (status) {
+      case 1:
+         console.log("farmVillages inválido. Aldeia duplicada.");
+         break;
+      case 2:
+         console.log("farmVillages inválido. Há modelos sem tropas.");
+         break;
+      default:
+         break;
+   }
 
-	if(status !== 0) {
-		console.log("Reload em 10 minutos.");
-		setTimeout(function () {
-			window.location.reload(true);
-		}, 10 * 60 * 1000);
-		return;
-	}
+   if (status !== 0) {
+      console.log("Reload em 10 minutos.");
+      setTimeout(function () {
+         window.location.reload(true);
+      }, 10 * 60 * 1000);
+      return;
+   }
 
    if (!farmVillages.some(v => v.coordinates === getCurrentVillage())) {
       if (farmVillages.length <= 1) {
@@ -108,16 +108,16 @@ const currentPageIndex = nPages !== 0 ? Number(document.querySelector("strong").
 })();
 
 function checkForCorruptedFarmVillages() {
-	const coordinates = new Map();
+   const coordinates = new Map();
    farmVillages.forEach(v => coordinates.set(v.coordinates, v.coordinates));
-   if(coordinates.size !== farmVillages.length) {
-		return 1;
-	}
-   for(let i = 0; i < farmVillages.length; i++) {
+   if (coordinates.size !== farmVillages.length) {
+      return 1;
+   }
+   for (let i = 0; i < farmVillages.length; i++) {
       const v = farmVillages[i];
       const modelASum = Object.values(v.A).reduce((a, b) => a + b, 0);
       const modelBSum = Object.values(v.B).reduce((a, b) => a + b, 0);
-      if(modelASum === 0 || modelBSum === 0) {
+      if (modelASum === 0 || modelBSum === 0) {
          return 2;
       }
    }
@@ -126,14 +126,14 @@ function checkForCorruptedFarmVillages() {
 
 function updateABForCurrentVillage(currentModel, userModel) {
    let mustClickSaveButton = false;
-   for(let i = 0; i < Object.values(userModel).length; i++) {
+   for (let i = 0; i < Object.values(userModel).length; i++) {
       const userPref = Object.values(userModel)[i];
-      if(userPref !== Number(currentModel[i + 1].value)) {
+      if (userPref !== Number(currentModel[i + 1].value)) {
          currentModel[i + 1].value = userPref;
          mustClickSaveButton = true;
       }
    }
-   if(mustClickSaveButton) {
+   if (mustClickSaveButton) {
       currentModel[0].click();
    }
 }
@@ -247,9 +247,9 @@ function indexCoords(coords) {
 
 function getSlowestTroopTime(userSetting) {
    let slowestTime = 0;
-   for(let i = 0; i < userSetting.length; i++) {
-      if(userSetting[i] > 0) {
-         if(Object.values(troopsSpeed)[i] > slowestTime) {
+   for (let i = 0; i < userSetting.length; i++) {
+      if (userSetting[i] > 0) {
+         if (Object.values(troopsSpeed)[i] > slowestTime) {
             slowestTime = Object.values(troopsSpeed)[i];
          }
       }
@@ -263,14 +263,14 @@ function getCurrentVillage() {
 }
 
 function subtractTroops(arrA, arrB) {
-   for(let i = 0; i < arrA.length; i++) {
+   for (let i = 0; i < arrA.length; i++) {
       arrA[i] = arrA[i] - arrB[i];
    }
 }
 
 function hasEnoughTroops(arrA, arrB) {
-   for(let i = 0; i < arrA.length; i++) {
-      if(arrA[i] < arrB[i]) {
+   for (let i = 0; i < arrA.length; i++) {
+      if (arrA[i] < arrB[i]) {
          return false;
       }
    }
@@ -314,7 +314,7 @@ function nextIteration() {
       if (!hasEnoughTroops(troops, troopsSetting)) {
          outOfTroops = true;
          console.log("Não tens tropas suficientes.");
-         if(!hasEnoughTroops(troops, Object.values(currentVillageSettings.B))) {
+         if (!hasEnoughTroops(troops, Object.values(currentVillageSettings.B))) {
             break;
          }
          continue;
@@ -326,7 +326,7 @@ function nextIteration() {
       farmsScheduled++;
    }
    console.log("Tropas restantes no fim da página: " + troops);
-   return { 
+   return {
       attacks: farmsScheduled,
       noMoreTroops: outOfTroops
    };
