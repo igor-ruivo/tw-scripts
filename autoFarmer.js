@@ -15,10 +15,13 @@ const baseTimeInMillisBetweenFarms = 1500;
 const setupIntervalTimerInMillis = 500;
 const waitTimePerPageOrVillageChange = 5000;
 
+// set minutesBetweenAttacks = Infinity if you don't want to use this feature
+const maxMinutesBetweenAttacks = 30;
+
 const farmVillages = [
    {
       coordinates: "746|588",
-      A: { spear: 0, sword: 0, axe: 0, spy: 0, light: 5, heavy: 0 },
+      A: { spear: 0, sword: 0, axe: 0, spy: 0, light: 3, heavy: 0 },
       B: { spear: 0, sword: 0, axe: 0, spy: 0, light: 2, heavy: 0 }
    },
    {
@@ -209,12 +212,13 @@ function farm(index, button, coords, distance, currentVillage, randomComponent, 
       }
       let sendAttack = true;
       let memory = localStorage[indexCoords(coords)];
+      const dateNow = Date.parse(new Date());
       if (memory) {
          const onGoingAttacksArray = JSON.parse(memory);
          const newArray = [];
          for (let i = 0; i < onGoingAttacksArray.length; i++) {
             const e = onGoingAttacksArray[i];
-            if (e.arrivalTime > Date.parse(new Date())) {
+            if (e.arrivalTime > dateNow && (e.sendTime ?? Infinity) + maxMinutesBetweenAttacks * 60 * 1000 > dateNow) {
                if (e.sender === currentVillage) {
                   sendAttack = false;
                }
@@ -231,7 +235,8 @@ function farm(index, button, coords, distance, currentVillage, randomComponent, 
          memory = localStorage[indexCoords(coords)];
          const newEntry = [{
             sender: currentVillage,
-            arrivalTime: Date.parse(new Date()) + Math.round(distance * slowestTroopTime * 1000)
+            sendTime: dateNow,
+            arrivalTime: dateNow + Math.round(distance * slowestTroopTime * 1000)
          }];
          localStorage[indexCoords(coords)] = JSON.stringify(memory ? JSON.parse(memory).concat(newEntry) : newEntry);
          button.click();
@@ -301,8 +306,9 @@ function nextIteration() {
       const memory = localStorage[indexCoords(coords)];
       const randomComponent = Math.round(Math.random() * 500);
       if (memory) {
+         const computedDate = Date.parse(new Date()) + baseTimeInMillisBetweenFarms * farmsScheduled + randomComponent;
          if (JSON.parse(memory).some(e =>
-            e.sender === currentVillage && e.arrivalTime > Date.parse(new Date()) + baseTimeInMillisBetweenFarms * farmsScheduled + randomComponent
+            e.sender === currentVillage && e.arrivalTime > computedDate && (e.sendTime ?? Infinity) + maxMinutesBetweenAttacks * 60 * 1000 > computedDate
          )) {
             continue;
          }
