@@ -293,9 +293,7 @@ function nextIteration() {
    const slowestTroopTime = {
       A: getSlowestTroopTime(Object.values(currentVillageSettings.A)),
       B: getSlowestTroopTime(Object.values(currentVillageSettings.B))
-   }
-   console.log("Tropa mais lenta no modelo A (em segundos): " + slowestTroopTime.A);
-   console.log("Tropa mais lenta no modelo B (em segundos): " + slowestTroopTime.B);
+   };
    for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       const columns = line.querySelectorAll("td");
@@ -303,6 +301,34 @@ function nextIteration() {
       const icon = iconColumn.children[0];
       const coordsColumn = columns[3];
       const coords = coordsColumn.innerText.substring(1, coordsColumn.innerText.indexOf(")"));
+      const statusColumn = columns[1];
+      const srcAttr = statusColumn.children[0].getAttribute("src");
+      const isGreenBall = srcAttr?.endsWith("green.png") || srcAttr?.endsWith("blue.png");
+      if(!isGreenBall) {
+         const wallMemory = localStorage["$w$" + coords + "$w$"];
+         if(!wallMemory) {
+            localStorage["$w$" + coords + "$w$"] = JSON.stringify({
+               status: 0,
+               arrivalTime: 0
+            });
+            continue;
+         } else {
+            const mem = JSON.parse(wallMemory);
+            if(mem.status === 1 && mem.arrivalTime < Date.parse(new Date())) {
+               localStorage.removeItem("$w$" + coords + "$w$");
+            } else {
+               continue;
+            }
+         }
+      } else {
+         const wallMemory = localStorage["$w$" + coords + "$w$"];
+         if(wallMemory) {
+            const mem = JSON.parse(wallMemory);
+            if(mem.status === 1 && mem.arrivalTime < Date.parse(new Date())) {
+               localStorage.removeItem("$w$" + coords + "$w$");
+            }
+         }
+      }
       const memory = localStorage[indexCoords(coords)];
       const randomComponent = Math.round(Math.random() * 500);
       if (memory) {
@@ -331,7 +357,6 @@ function nextIteration() {
       subtractTroops(troops, troopsSetting);
       farmsScheduled++;
    }
-   console.log("Tropas restantes no fim da página: " + troops);
    return {
       attacks: farmsScheduled,
       noMoreTroops: outOfTroops
