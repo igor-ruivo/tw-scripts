@@ -304,17 +304,19 @@ function nextIteration() {
       const statusColumn = columns[1];
       const srcAttr = statusColumn.children[0].getAttribute("src");
       const isGreenBall = srcAttr?.endsWith("green.png") || srcAttr?.endsWith("blue.png");
+      const distance = Number(columns[7].innerText);
       if(!isGreenBall) {
          const wallMemory = localStorage["$w$" + coords + "$w$"];
          if(!wallMemory) {
             localStorage["$w$" + coords + "$w$"] = JSON.stringify({
                status: 0,
-               arrivalTime: 0
+               sendTime: 0,
+               slowestTroop: 0
             });
             continue;
          } else {
             const mem = JSON.parse(wallMemory);
-            if(mem.status === 1 && mem.arrivalTime < Date.parse(new Date())) {
+            if(mem.status === 1 && (mem.sendTime || Infinity) + (mem.slowestTroop || Infinity) * distance * 1000 < Date.parse(new Date())) {
                localStorage.removeItem("$w$" + coords + "$w$");
             } else {
                continue;
@@ -324,7 +326,7 @@ function nextIteration() {
          const wallMemory = localStorage["$w$" + coords + "$w$"];
          if(wallMemory) {
             const mem = JSON.parse(wallMemory);
-            if(mem.status === 1 && mem.arrivalTime < Date.parse(new Date())) {
+            if(mem.status === 1 && (mem.sendTime || Infinity) + (mem.slowestTroop || Infinity) * distance * 1000 < Date.parse(new Date())) {
                localStorage.removeItem("$w$" + coords + "$w$");
             }
          }
@@ -339,7 +341,6 @@ function nextIteration() {
             continue;
          }
       }
-      const distance = Number(columns[7].innerText);
       const partialLoot = icon?.getAttribute("src")?.endsWith("max_loot/0.png");
       const adequateSetting = partialLoot ? currentVillageSettings.B : currentVillageSettings.A;
       const troopsSetting = Object.values(adequateSetting);
