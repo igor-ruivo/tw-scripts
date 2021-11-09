@@ -15,11 +15,11 @@
 const forceOrder = false;
 const buildStorageWhenNeeded = true;
 const buildFarmWhenNeeded = true;
-const maxStoragePercentage = 98;
+const maxStoragePercentage = 90;
 const maxFarmPercentage = 95;
 const maxStorageLevel = 30;
 const maxFarmLevel = 30;
-const maxBuildQueueLength = 5;
+const maxBuildQueueLength = 2;
 const buildQueueOffset = 2;
 const offsetTimeInMillis = 3000;
 
@@ -52,6 +52,7 @@ function getDate() {
 }
 
 function nextIteration() {
+    completeFreeTasks();
 	const nextBuildTask = getNextBuildTask();
 	if (nextBuildTask) {
 		nextBuildTask.click();
@@ -112,6 +113,10 @@ function removeCompletedTasks(list) {
 	return newBuildList;
 }
 
+function completeFreeTasks() {
+    Array.from(document.getElementsByClassName("btn-instant-free")).filter(e => e.style.display !== 'none').forEach(e => e.click());
+}
+
 function getNextBuildTask() {
 	if (buildStorageWhenNeeded) {
 		checkStorageForUpgrade(levels["storage"] - 1);
@@ -161,24 +166,12 @@ function loadUserBuildList() {
 	const buildList = [];
 
 	//change
-	buildList.push({ village: "746|588", building: "wood", level: 30 });
-	buildList.push({ village: "746|588", building: "stone", level: 30 });
-	buildList.push({ village: "746|588", building: "iron", level: 30 });
-	buildList.push({ village: "746|588", building: "barracks", level: 25 });
-	buildList.push({ village: "746|588", building: "stable", level: 20 });
-	buildList.push({ village: "746|588", building: "market", level: 20 });
-//
-	buildList.push({ village: "743|587", building: "snob", level: 1 });
-	buildList.push({ village: "743|587", building: "wood", level: 30 });
-	buildList.push({ village: "743|587", building: "stone", level: 30 });
-	buildList.push({ village: "743|587", building: "iron", level: 30 });
-	buildList.push({ village: "743|587", building: "smith", level: 20 });
-	buildList.push({ village: "743|587", building: "market", level: 10 });
-//740|584
-    buildList.push({ village: "740|584", building: "main", level: 20 });
-    buildList.push({ village: "740|584", building: "storage", level: 10 });
-    buildList.push({ village: "740|584", building: "wood", level: 30 });
-	buildList.push({ village: "740|584", building: "stone", level: 30 });
-	buildList.push({ village: "740|584", building: "iron", level: 30 });
+	buildList.push({ village: "405|439", building: "wood", level: 30 });
+	buildList.push({ village: "405|439", building: "stone", level: 30 });
+	buildList.push({ village: "405|439", building: "iron", level: 30 });
+    buildList.push({ village: "405|439", building: "main", level: 10 });
+	buildList.push({ village: "405|439", building: "barracks", level: 5 });
+	buildList.push({ village: "405|439", building: "smith", level: 5 });
+	buildList.push({ village: "405|439", building: "stable", level: 3 });
 	return removeCompletedTasks(buildList);
 }
