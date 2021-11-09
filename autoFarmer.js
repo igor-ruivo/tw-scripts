@@ -15,7 +15,7 @@ const baseTimeInMillisBetweenFarms = 1500;
 const setupIntervalTimerInMillis = 500;
 const waitTimePerPageOrVillageChange = 5000;
 
-// set minutesBetweenAttacks = Infinity if you don't want to use this feature
+// set maxMinutesBetweenAttacks = Infinity if you don't want to use this feature
 const maxMinutesBetweenAttacks = 30;
 
 const farmVillages = [
