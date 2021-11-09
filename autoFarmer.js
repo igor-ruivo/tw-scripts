@@ -21,23 +21,26 @@ const maxMinutesBetweenAttacks = 30;
 const farmVillages = [
    {
       coordinates: "746|588",
-      A: { spear: 0, sword: 0, axe: 0, spy: 0, light: 3, heavy: 0 },
-      B: { spear: 0, sword: 0, axe: 0, spy: 0, light: 2, heavy: 0 }
+      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0},
+      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0}
    },
    {
       coordinates: "743|587",
-      A: { spear: 0, sword: 0, axe: 0, spy: 0, light: 2, heavy: 0 },
-      B: { spear: 0, sword: 0, axe: 0, spy: 0, light: 1, heavy: 0 }
+      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0},
+      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0}
    }
 ];
 
 const troopsSpeed = {
-   spear: 432,
-   sword: 528,
-   axe: 432,
-   spy: 216,
-   light: 240,
-   heavy: 264
+   spear: 18 * 60,
+   sword: 22 * 60,
+   axe: 18 * 60,
+   archer: 18 * 60,
+   spy: 9 * 60,
+   light: 10 * 60,
+   marcher: 10 * 60,
+   heavy: 11 * 60,
+   knight: 10 * 60
 }
 
 let stopIteration = false;

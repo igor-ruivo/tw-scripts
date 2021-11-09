@@ -12,21 +12,25 @@
 // ==/UserScript==
 
 const template = {
-    spear: 0, sword: 0, axe: 30,
-    spy: 0, light: 0, heavy: 0,
-    ram: 8, catapult: 0, snob: 0
+    spear: 0, sword: 0, axe: 30, archer: 0,
+    spy: 0, light: 0, marcher: 0, heavy: 0,
+    ram: 8, catapult: 0,
+    knight: 0, snob: 0
 };
 
 const troopsSpeed = {
-   spear: 432,
-   sword: 528,
-   axe: 432,
-   spy: 216,
-   light: 240,
-   heavy: 264,
-   ram: 720,
-   catapult: 720,
-   snob: 840
+   spear: 18 * 60,
+   sword: 22 * 60,
+   axe: 18 * 60,
+   archer: 18 * 60,
+   spy: 9 * 60,
+   light: 10 * 60,
+   marcher: 10 * 60,
+   heavy: 11 * 60,
+   ram: 30 * 60,
+   catapult: 30 * 60,
+   knight: 10 * 60,
+   snob: 35 * 60
 };
 
 const waitTimeForDistanceTooltipToAppear = 5000;
