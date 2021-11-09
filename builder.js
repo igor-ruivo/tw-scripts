@@ -114,7 +114,9 @@ function removeCompletedTasks(list) {
 }
 
 function completeFreeTasks() {
-    Array.from(document.getElementsByClassName("btn-instant-free")).filter(e => e.style.display !== 'none').forEach(e => e.click());
+    Array.from(document.getElementsByClassName("btn-instant-free"))
+	.filter(e => e.style.display !== 'none')
+	.forEach(e => e.click());
 }
 
 function getNextBuildTask() {
