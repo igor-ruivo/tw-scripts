@@ -12,6 +12,7 @@
 // ==/UserScript==
 
 const setupIntervalTimerInMillis = 1000;
+const minimumCapacityNeeded = 250;
 
 const scavengeWith = [
    true, //spear
@@ -92,7 +93,7 @@ function secondDegreeIteration() {
          if(i + j < 0.99) {
             continue;
          }
-         if(Math.round(i * totalHaul) < 250 || Math.round(j * totalHaul) < 250) {
+         if(i > 0 && Math.round(i * totalHaul) < minimumCapacityNeeded || j > 0 && Math.round(j * totalHaul) < minimumCapacityNeeded) {
             continue;
          }
          const score = calcScore({first: i, second: j, third: 0, fourth: 0});
@@ -125,7 +126,7 @@ function thirdDegreeIteration() {
             if(i + j + k < 0.99) {
                continue;
             }
-            if(Math.round(i * totalHaul) < 250 || Math.round(j * totalHaul) < 250 || Math.round(k * totalHaul) < 250) {
+            if(i > 0 && Math.round(i * totalHaul) < minimumCapacityNeeded || j > 0 && Math.round(j * totalHaul) < minimumCapacityNeeded || k > 0 && Math.round(k * totalHaul) < minimumCapacityNeeded) {
                continue;
             }
             const score = calcScore({first: i, second: j, third: k, fourth: 0});
@@ -163,7 +164,7 @@ function fourthDegreeIteration() {
                if(i + j + k + l < 0.99) {
                   continue;
                }
-               if(Math.round(i * totalHaul) < 250 || Math.round(j * totalHaul) < 250 || Math.round(k * totalHaul) < 250 || Math.round(l * totalHaul) < 250) {
+               if(i > 0 && Math.round(i * totalHaul) < minimumCapacityNeeded || j > 0 && Math.round(j * totalHaul) < minimumCapacityNeeded || k > 0 && Math.round(k * totalHaul) < minimumCapacityNeeded || l > 0 && Math.round(l * totalHaul) < minimumCapacityNeeded) {
                   continue;
                }
                const score = calcScore({first: i, second: j, third: k, fourth: l});
@@ -315,8 +316,8 @@ function nextIteration() {
          troops.forEach((n, index) => totalHaul += n * troopsLoot[index]);
          console.log("t = " + totalHaul);
          console.log("troops = " + troops);
-         if(totalHaul < 250) {
-            console.log("Não tens tropa suficiente. Só podes utilizar a ferramenta com pelo menos 250 de capacidade de saque.");
+         if(totalHaul < minimumCapacityNeeded) {
+            console.log("Não tens tropa suficiente. Só podes utilizar a ferramenta com pelo menos " + minimumCapacityNeeded + " de capacidade de saque.");
             console.log("Reload em 1 minuto.");
             setTimeout(function () {
                window.location.reload(true);
