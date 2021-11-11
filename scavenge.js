@@ -204,7 +204,7 @@ function nextIteration() {
    var storage = localStorage["$sc$" + getCurrentVillage() + "$sc$"];
    if(storage) {
       storage = JSON.parse(storage);
-      if(storage.first.reduce((a, b) => a + b, 0) > 0) {
+      if(storage.first.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[0].querySelector(".free_send_button")) {
          for(var index = 0; index < $(".input-nicer").length; index++) {
             $(".input-nicer").eq(index).val(storage.first[index]).change();
          }
@@ -212,7 +212,7 @@ function nextIteration() {
          window.location.reload(true);
          return;
       }
-      if(storage.second.reduce((a, b) => a + b, 0) > 0) {
+      if(storage.second.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[1].querySelector(".free_send_button")) {
          for(var index = 0; index < $(".input-nicer").length; index++) {
             $(".input-nicer").eq(index).val(storage.second[index]).change();
          }
@@ -220,7 +220,7 @@ function nextIteration() {
          window.location.reload(true);
          return;
       }
-      if(storage.third.reduce((a, b) => a + b, 0) > 0) {
+      if(storage.third.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[2].querySelector(".free_send_button")) {
          for(var index = 0; index < $(".input-nicer").length; index++) {
             $(".input-nicer").eq(index).val(storage.third[index]).change();
          }
@@ -228,7 +228,7 @@ function nextIteration() {
          window.location.reload(true);
          return;
       }
-      if(storage.fourth.reduce((a, b) => a + b, 0) > 0) {
+      if(storage.fourth.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[3].querySelector(".free_send_button")) {
          for(var index = 0; index < $(".input-nicer").length; index++) {
             $(".input-nicer").eq(index).val(storage.fourth[index]).change();
          }
