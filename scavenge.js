@@ -4,7 +4,7 @@
 // @author		         Igor Ruivo
 // @include             http*://*screen=place*mode=scavenge*
 // @version     	      0.0.1
-// @supportURL          https://github.com/igor-ruivo/tw-scripts
+// @supportURL          https://github.com/igor-ruivo/tw-scriptsjs
 // @grant               GM_getResourceText
 // @grant               GM_addStyle
 // @grant               GM_getValue
@@ -12,6 +12,28 @@
 // ==/UserScript==
 
 const setupIntervalTimerInMillis = 1000;
+
+const troopsLoot = [
+   25,
+   15,
+   10,
+   10,
+   80,
+   50,
+   50,
+   100
+];
+
+const troopsAllocationOrder = [
+   7,
+   4,
+   5,
+   6,
+   0,
+   1,
+   2,
+   3
+];
 
 const memory = new Map();
 var nOptions;
@@ -28,10 +50,7 @@ var totalHaul;
 function secondDegreeIteration() {
    var maxScore = {
       score: 0,
-      first: 0,
-      second: 0,
-      third: 0,
-      fourth: 0
+      allocations: [0, 0, 0, 0]
    };
 
    for(let i = 0; i <= 1; i += 0.0001) {
@@ -46,10 +65,7 @@ function secondDegreeIteration() {
          var score = calcScore({first: i, second: j, third: 0, fourth: 0});
          if(score > maxScore.score) {
             maxScore.score = score;
-            maxScore.first = i;
-            maxScore.second = j;
-            maxScore.third = 0;
-            maxScore.fourth = 0;
+            maxScore.allocations = [i, j, 0, 0];
          }
       }
    }
@@ -60,10 +76,7 @@ function secondDegreeIteration() {
 function thirdDegreeIteration() {
    var maxScore = {
       score: 0,
-      first: 0,
-      second: 0,
-      third: 0,
-      fourth: 0
+      allocations: [0, 0, 0, 0]
    };
 
    for(let i = 0; i <= 1; i += 0.001) {
@@ -82,10 +95,7 @@ function thirdDegreeIteration() {
             var score = calcScore({first: i, second: j, third: k, fourth: 0});
             if(score > maxScore.score) {
                maxScore.score = score;
-               maxScore.first = i;
-               maxScore.second = j;
-               maxScore.third = k;
-               maxScore.fourth = 0;
+               maxScore.allocations = [i, j, k, 0];
             }
          }
       }
@@ -97,10 +107,7 @@ function thirdDegreeIteration() {
 function fourthDegreeIteration() {
    var maxScore = {
       score: 0,
-      first: 0,
-      second: 0,
-      third: 0,
-      fourth: 0
+      allocations: [0, 0, 0, 0]
    };
 
    for(let i = 0; i <= 1; i += 0.01) {
@@ -123,10 +130,7 @@ function fourthDegreeIteration() {
                var score = calcScore({first: i, second: j, third: k, fourth: l});
                if(score > maxScore.score) {
                   maxScore.score = score;
-                  maxScore.first = i;
-                  maxScore.second = j;
-                  maxScore.third = k;
-                  maxScore.fourth = l;
+                  maxScore.allocations = [i, j, k, l];
                }
             }
          }
@@ -136,9 +140,60 @@ function fourthDegreeIteration() {
    return maxScore;
 }
 
+function isLastAllocation(i, troops) {
+   for(let j = i + 1; j < troopsAllocationOrder.length; j++) {
+      if(troops[troopsAllocationOrder[j]] == 0) {
+         continue;
+      }
+      return false;
+   }
+   return true;
+}
+
+function allocate(maxScore) {
+   var troops = Array.from(document.getElementsByClassName("input-nicer")).map(i => Number(i.value));
+   var todo = {
+      first: [],
+      second: [],
+      third: [],
+      fourth: []
+   };
+   for(let nOption = 0; nOption < nOptions; nOption++) {
+      console.log("opção " + nOption + ":");
+      var allocation = [0, 0, 0, 0, 0, 0, 0, 0];
+      var allocationsEstimate = maxScore.allocations[nOption] * totalHaul;
+      //console.log("quero alocar " + allocationsEstimate + " recursos");
+      for(let i = 0; i < troopsAllocationOrder.length; i++) {
+         if(troops[troopsAllocationOrder[i]] == 0) {
+            continue;
+         }
+         //console.log("tropa detetada:" + troopsAllocationOrder[i]);
+         //console.log("min entre " + troops[troopsAllocationOrder[i]] + " e " + Math.floor(allocationsEstimate / troopsLoot[troopsAllocationOrder[i]]));
+         var quantity = !(nOption === nOptions - 1 && isLastAllocation(i, troops)) ? Math.min(troops[troopsAllocationOrder[i]], Math.floor(allocationsEstimate / troopsLoot[troopsAllocationOrder[i]])) : troops[troopsAllocationOrder[i]];
+         //console.log("quantity: " + quantity);
+         allocation[troopsAllocationOrder[i]] = quantity;
+         troops[troopsAllocationOrder[i]] -= quantity;
+         allocationsEstimate -= quantity * troopsLoot[troopsAllocationOrder[i]];
+      }
+      console.log(allocation);
+      todo[Object.keys(todo)[nOption]] = allocation;
+      //Array.from(document.getElementsByClassName("input-nicer")).forEach((e, index) => e.value = allocation[index]);
+      //document.getElementsByClassName("free_send_button")[nOption].click();
+      localStorage["$sc$" + getCurrentVillage() + "$sc$"] = JSON.stringify(todo);
+      window.location.reload(true);
+   }
+}
+
+function getCurrentVillage() {
+   const villageName = document.getElementById("menu_row2").querySelector("b").innerText.split(" ")[0];
+   return villageName.slice(1, villageName.indexOf(")"));
+}
+
 function nextIteration() {
-   if(document.getElementById("scavenge_screen").querySelectorAll(".return-countdown").length > 0) {
-      console.log("Há buscas em progresso. Aguarda.");
+   nOptions = Number(document.getElementsByClassName("scavenge-option").length) - Number(document.getElementsByClassName("unlock-button").length);
+
+   if(nOptions < 2) {
+      console.log("Precisas de pelo menos 2 diferentes buscas desbloqueadas para utilizar esta ferramenta.");
       console.log("Reload em 1 minuto.");
       setTimeout(function () {
          window.location.reload(true);
@@ -146,10 +201,46 @@ function nextIteration() {
       return;
    }
 
-   nOptions = Number(document.getElementsByClassName("free_send_button").length);
-
-   if(nOptions < 2) {
-      console.log("Precisas de pelo menos 2 diferentes buscas desbloqueadas para utilizar esta ferramenta.");
+   var storage = localStorage["$sc$" + getCurrentVillage() + "$sc$"];
+   if(storage) {
+      storage = JSON.parse(storage);
+      if(storage.first.reduce((a, b) => a + b, 0) > 0) {
+         for(var index = 0; index < $(".input-nicer").length; index++) {
+            $(".input-nicer").eq(index).val(storage.first[index]).change();
+         }
+         document.getElementsByClassName("scavenge-option")[0].querySelector(".free_send_button")?.click();
+         window.location.reload(true);
+         return;
+      }
+      if(storage.second.reduce((a, b) => a + b, 0) > 0) {
+         for(var index = 0; index < $(".input-nicer").length; index++) {
+            $(".input-nicer").eq(index).val(storage.second[index]).change();
+         }
+         document.getElementsByClassName("scavenge-option")[1].querySelector(".free_send_button")?.click();
+         window.location.reload(true);
+         return;
+      }
+      if(storage.third.reduce((a, b) => a + b, 0) > 0) {
+         for(var index = 0; index < $(".input-nicer").length; index++) {
+            $(".input-nicer").eq(index).val(storage.third[index]).change();
+         }
+         document.getElementsByClassName("scavenge-option")[2].querySelector(".free_send_button")?.click();
+         window.location.reload(true);
+         return;
+      }
+      if(storage.fourth.reduce((a, b) => a + b, 0) > 0) {
+         for(var index = 0; index < $(".input-nicer").length; index++) {
+            $(".input-nicer").eq(index).val(storage.fourth[index]).change();
+         }
+         document.getElementsByClassName("scavenge-option")[3].querySelector(".free_send_button")?.click();
+         window.location.reload(true);
+         return;
+      }
+      localStorage.removeItem("$sc$" + getCurrentVillage() + "$sc$");
+   }
+   
+   if(document.getElementById("scavenge_screen").querySelectorAll(".return-countdown").length > 0) {
+      console.log("Há buscas em progresso. Aguarda.");
       console.log("Reload em 1 minuto.");
       setTimeout(function () {
          window.location.reload(true);
@@ -184,6 +275,7 @@ function nextIteration() {
 
       console.log(maxScore);
       console.log("Recursos por dia: " + maxScore.score * 24 * 60 * 60);
+      allocate(maxScore);
    }, setupIntervalTimerInMillis * 2);
 }
 
