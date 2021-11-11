@@ -150,16 +150,6 @@ function fourthDegreeIteration() {
 
    return maxScore;
 }
-/*
-function isLastAllocation(i, troops) {
-   for(let j = i + 1; j < troopsAllocationOrder.length; j++) {
-      if(troops[troopsAllocationOrder[j]] == 0) {
-         continue;
-      }
-      return false;
-   }
-   return true;
-}*/
 
 function allocate(maxScore) {
    var troops = Array.from(document.getElementsByClassName("input-nicer")).map(i => Number(i.value));
@@ -174,15 +164,11 @@ function allocate(maxScore) {
       var allocation = [0, 0, 0, 0, 0, 0, 0, 0];
       var allocationsEstimate = maxScore.allocations[nOption] * totalHaul;
       var populationSum = 0;
-      //console.log("quero alocar " + allocationsEstimate + " recursos");
       for(let i = 0; i < troopsAllocationOrder.length; i++) {
          if(troops[troopsAllocationOrder[i]] == 0) {
             continue;
          }
-         //console.log("tropa detetada:" + troopsAllocationOrder[i]);
-         //console.log("min entre " + troops[troopsAllocationOrder[i]] + " e " + Math.floor(allocationsEstimate / troopsLoot[troopsAllocationOrder[i]]));
-         var quantity = !(nOption === nOptions - 1/* && isLastAllocation(i, troops)*/) ? Math.min(troops[troopsAllocationOrder[i]], Math.floor(allocationsEstimate / troopsLoot[troopsAllocationOrder[i]])) : troops[troopsAllocationOrder[i]];
-         //console.log("quantity: " + quantity);
+         var quantity = nOption !== nOptions - 1 ? Math.min(troops[troopsAllocationOrder[i]], Math.floor(allocationsEstimate / troopsLoot[troopsAllocationOrder[i]])) : troops[troopsAllocationOrder[i]];
          populationSum += troopsPopulation[troopsAllocationOrder[i]] * quantity;
          allocation[troopsAllocationOrder[i]] = quantity;
          troops[troopsAllocationOrder[i]] -= quantity;
@@ -199,7 +185,10 @@ function allocate(maxScore) {
       }
    }
    localStorage["$sc$" + getCurrentVillage() + "$sc$"] = JSON.stringify(todo);
-   window.location.reload(true);
+   console.log("Reload dentro de 5 segundos.");
+   setTimeout(function () {
+      window.location.reload(true);
+   }, 5 * 1000);
 }
 
 function getCurrentVillage() {
@@ -221,88 +210,111 @@ function nextIteration() {
 
    var storage = localStorage["$sc$" + getCurrentVillage() + "$sc$"];
    if(storage) {
-      storage = JSON.parse(storage);
-      if(storage.first.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[0].querySelector(".free_send_button")) {
-         for(var index = 0; index < $(".input-nicer").length; index++) {
-            $(".input-nicer").eq(index).val(storage.first[index]).change();
-         }
-         document.getElementsByClassName("scavenge-option")[0].querySelector(".free_send_button")?.click();
-         window.location.reload(true);
-         return;
-      }
-      if(storage.second.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[1].querySelector(".free_send_button")) {
-         for(var index = 0; index < $(".input-nicer").length; index++) {
-            $(".input-nicer").eq(index).val(storage.second[index]).change();
-         }
-         document.getElementsByClassName("scavenge-option")[1].querySelector(".free_send_button")?.click();
-         window.location.reload(true);
-         return;
-      }
-      if(storage.third.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[2].querySelector(".free_send_button")) {
-         for(var index = 0; index < $(".input-nicer").length; index++) {
-            $(".input-nicer").eq(index).val(storage.third[index]).change();
-         }
-         document.getElementsByClassName("scavenge-option")[2].querySelector(".free_send_button")?.click();
-         window.location.reload(true);
-         return;
-      }
-      if(storage.fourth.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[3].querySelector(".free_send_button")) {
-         for(var index = 0; index < $(".input-nicer").length; index++) {
-            $(".input-nicer").eq(index).val(storage.fourth[index]).change();
-         }
-         document.getElementsByClassName("scavenge-option")[3].querySelector(".free_send_button")?.click();
-         window.location.reload(true);
-         return;
-      }
-      localStorage.removeItem("$sc$" + getCurrentVillage() + "$sc$");
-   }
-   
-   if(document.getElementById("scavenge_screen").querySelectorAll(".return-countdown").length > 0) {
-      console.log("Há buscas em progresso. Aguarda.");
-      console.log("Reload em 1 minuto.");
       setTimeout(function () {
+         storage = JSON.parse(storage);
+         if(storage.first.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[0].querySelector(".free_send_button")) {
+            for(var index = 0; index < $(".input-nicer").length; index++) {
+               $(".input-nicer").eq(index).val(storage.first[index]).change();
+            }
+            setTimeout(function () {
+               document.getElementsByClassName("scavenge-option")[0].querySelector(".free_send_button")?.click();
+            }, setupIntervalTimerInMillis * 4);
+
+            setTimeout(function () {
+               window.location.reload(true);
+            }, setupIntervalTimerInMillis * 7);
+            return;
+         }
+         if(storage.second.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[1].querySelector(".free_send_button")) {
+            for(var index = 0; index < $(".input-nicer").length; index++) {
+               $(".input-nicer").eq(index).val(storage.second[index]).change();
+            }
+            setTimeout(function () {
+               document.getElementsByClassName("scavenge-option")[1].querySelector(".free_send_button")?.click();
+            }, setupIntervalTimerInMillis * 4);
+
+            setTimeout(function () {
+               window.location.reload(true);
+            }, setupIntervalTimerInMillis * 7);
+            return;
+         }
+         if(storage.third.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[2].querySelector(".free_send_button")) {
+            for(var index = 0; index < $(".input-nicer").length; index++) {
+               $(".input-nicer").eq(index).val(storage.third[index]).change();
+            }
+            setTimeout(function () {
+               document.getElementsByClassName("scavenge-option")[2].querySelector(".free_send_button")?.click();
+            }, setupIntervalTimerInMillis * 4);
+
+            setTimeout(function () {
+               window.location.reload(true);
+            }, setupIntervalTimerInMillis * 7);
+            return;
+         }
+         if(storage.fourth.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[3].querySelector(".free_send_button")) {
+            for(var index = 0; index < $(".input-nicer").length; index++) {
+               $(".input-nicer").eq(index).val(storage.fourth[index]).change();
+            }
+            setTimeout(function () {
+               document.getElementsByClassName("scavenge-option")[3].querySelector(".free_send_button")?.click();
+            }, setupIntervalTimerInMillis * 4);
+
+            setTimeout(function () {
+               window.location.reload(true);
+            }, setupIntervalTimerInMillis * 7);
+            return;
+         }
+         localStorage.removeItem("$sc$" + getCurrentVillage() + "$sc$");
          window.location.reload(true);
-      }, 60 * 1000);
-      return;
-   }
-
-   console.log("Nível de busca desbloqueado: " + nOptions);
-
-   scavengingOptions = ScavengeScreen.village.options;
-   document.getElementsByClassName("fill-all")[0].click();
-
-   setTimeout(function () {
-      console.log("A procurar aproximadamente a melhor escolha...");
-      totalHaul = Number(document.getElementsByClassName("carry-max")[0].innerText.replaceAll(".", "").replaceAll(",", ""));
-      console.log("t = " + totalHaul);
-      if(totalHaul === 0) {
-         console.log("Não tens tropa suficiente.");
+      }, setupIntervalTimerInMillis * 2);
+   } else {
+      if(document.getElementById("scavenge_screen").querySelectorAll(".return-countdown").length > 0) {
+         console.log("Há buscas em progresso. Aguarda.");
          console.log("Reload em 1 minuto.");
          setTimeout(function () {
             window.location.reload(true);
          }, 60 * 1000);
          return;
       }
-      var maxScore;
 
-      switch(nOptions) {
-         case 2:
-            maxScore = secondDegreeIteration();
-            break;
-         case 3:
-            maxScore = thirdDegreeIteration();
-            break;
-         case 4:
-            maxScore = fourthDegreeIteration();
-            break;
-         default:
-            throw new Error("Invalid nOptions.");
-      }
+      console.log("Nível de busca desbloqueado: " + nOptions);
 
-      console.log(maxScore);
-      console.log("Recursos por dia: " + maxScore.score * 24 * 60 * 60);
-      allocate(maxScore);
-   }, setupIntervalTimerInMillis * 2);
+      scavengingOptions = ScavengeScreen.village.options;
+      document.getElementsByClassName("fill-all")[0].click();
+
+      setTimeout(function () {
+         console.log("A procurar aproximadamente a melhor escolha...");
+         totalHaul = Number(document.getElementsByClassName("carry-max")[0].innerText.replaceAll(".", "").replaceAll(",", ""));
+         console.log("t = " + totalHaul);
+         if(totalHaul === 0) {
+            console.log("Não tens tropa suficiente.");
+            console.log("Reload em 1 minuto.");
+            setTimeout(function () {
+               window.location.reload(true);
+            }, 60 * 1000);
+            return;
+         }
+         var maxScore;
+
+         switch(nOptions) {
+            case 2:
+               maxScore = secondDegreeIteration();
+               break;
+            case 3:
+               maxScore = thirdDegreeIteration();
+               break;
+            case 4:
+               maxScore = fourthDegreeIteration();
+               break;
+            default:
+               throw new Error("Invalid nOptions.");
+         }
+
+         console.log(maxScore);
+         console.log("Recursos por dia: " + maxScore.score * 24 * 60 * 60);
+         allocate(maxScore);
+      }, setupIntervalTimerInMillis * 2);
+   }
 }
 
 function getDuration(option, t) {
