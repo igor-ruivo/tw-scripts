@@ -13,6 +13,17 @@
 
 const setupIntervalTimerInMillis = 1000;
 
+const scavengeWith = [
+   true, //spear
+   true, //sword
+   true, //axe
+   true, //archer
+   false, //light
+   true, //marcher
+   true, //heavy
+   true //knight
+]
+
 const troopsLoot = [
    25,
    15,
@@ -47,9 +58,10 @@ const troopsPopulation = [
 ];
 
 const memory = new Map();
-var nOptions;
-var scavengingOptions;
-var totalHaul;
+let nOptions;
+let scavengingOptions;
+let totalHaul = 0;
+let troops;
 
 (function () {
    'use strict';
@@ -59,7 +71,7 @@ var totalHaul;
 })();
 
 function secondDegreeIteration() {
-   var maxScore = {
+   const maxScore = {
       score: 0,
       allocations: [0, 0, 0, 0]
    };
@@ -73,7 +85,7 @@ function secondDegreeIteration() {
          if(i + j < 0.99) {
             continue;
          }
-         var score = calcScore({first: i, second: j, third: 0, fourth: 0});
+         const score = calcScore({first: i, second: j, third: 0, fourth: 0});
          if(score > maxScore.score) {
             maxScore.score = score;
             maxScore.allocations = [i, j, 0, 0];
@@ -85,7 +97,7 @@ function secondDegreeIteration() {
 }
 
 function thirdDegreeIteration() {
-   var maxScore = {
+   const maxScore = {
       score: 0,
       allocations: [0, 0, 0, 0]
    };
@@ -103,7 +115,7 @@ function thirdDegreeIteration() {
             if(i + j + k < 0.99) {
                continue;
             }
-            var score = calcScore({first: i, second: j, third: k, fourth: 0});
+            const score = calcScore({first: i, second: j, third: k, fourth: 0});
             if(score > maxScore.score) {
                maxScore.score = score;
                maxScore.allocations = [i, j, k, 0];
@@ -116,7 +128,7 @@ function thirdDegreeIteration() {
 }
 
 function fourthDegreeIteration() {
-   var maxScore = {
+   const maxScore = {
       score: 0,
       allocations: [0, 0, 0, 0]
    };
@@ -138,7 +150,7 @@ function fourthDegreeIteration() {
                if(i + j + k + l < 0.99) {
                   continue;
                }
-               var score = calcScore({first: i, second: j, third: k, fourth: l});
+               const score = calcScore({first: i, second: j, third: k, fourth: l});
                if(score > maxScore.score) {
                   maxScore.score = score;
                   maxScore.allocations = [i, j, k, l];
@@ -152,8 +164,7 @@ function fourthDegreeIteration() {
 }
 
 function allocate(maxScore) {
-   var troops = Array.from(document.getElementsByClassName("input-nicer")).map(i => Number(i.value));
-   var todo = {
+   const todo = {
       first: [],
       second: [],
       third: [],
@@ -161,14 +172,14 @@ function allocate(maxScore) {
    };
    for(let nOption = 0; nOption < nOptions; nOption++) {
       console.log("opção " + nOption + ":");
-      var allocation = [0, 0, 0, 0, 0, 0, 0, 0];
-      var allocationsEstimate = maxScore.allocations[nOption] * totalHaul;
-      var populationSum = 0;
+      const allocation = [0, 0, 0, 0, 0, 0, 0, 0];
+      let allocationsEstimate = maxScore.allocations[nOption] * totalHaul;
+      let populationSum = 0;
       for(let i = 0; i < troopsAllocationOrder.length; i++) {
          if(troops[troopsAllocationOrder[i]] == 0) {
             continue;
          }
-         var quantity = nOption !== nOptions - 1 ? Math.min(troops[troopsAllocationOrder[i]], Math.floor(allocationsEstimate / troopsLoot[troopsAllocationOrder[i]])) : troops[troopsAllocationOrder[i]];
+         const quantity = nOption !== nOptions - 1 ? Math.min(troops[troopsAllocationOrder[i]], Math.floor(allocationsEstimate / troopsLoot[troopsAllocationOrder[i]])) : troops[troopsAllocationOrder[i]];
          populationSum += troopsPopulation[troopsAllocationOrder[i]] * quantity;
          allocation[troopsAllocationOrder[i]] = quantity;
          troops[troopsAllocationOrder[i]] -= quantity;
@@ -208,12 +219,12 @@ function nextIteration() {
       return;
    }
 
-   var storage = localStorage["$sc$" + getCurrentVillage() + "$sc$"];
+   let storage = localStorage["$sc$" + getCurrentVillage() + "$sc$"];
    if(storage) {
       setTimeout(function () {
          storage = JSON.parse(storage);
          if(storage.first.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[0].querySelector(".free_send_button")) {
-            for(var index = 0; index < $(".input-nicer").length; index++) {
+            for(let index = 0; index < $(".input-nicer").length; index++) {
                $(".input-nicer").eq(index).val(storage.first[index]).change();
             }
             setTimeout(function () {
@@ -226,7 +237,7 @@ function nextIteration() {
             return;
          }
          if(storage.second.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[1].querySelector(".free_send_button")) {
-            for(var index = 0; index < $(".input-nicer").length; index++) {
+            for(let index = 0; index < $(".input-nicer").length; index++) {
                $(".input-nicer").eq(index).val(storage.second[index]).change();
             }
             setTimeout(function () {
@@ -239,7 +250,7 @@ function nextIteration() {
             return;
          }
          if(storage.third.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[2].querySelector(".free_send_button")) {
-            for(var index = 0; index < $(".input-nicer").length; index++) {
+            for(let index = 0; index < $(".input-nicer").length; index++) {
                $(".input-nicer").eq(index).val(storage.third[index]).change();
             }
             setTimeout(function () {
@@ -252,7 +263,7 @@ function nextIteration() {
             return;
          }
          if(storage.fourth.reduce((a, b) => a + b, 0) > 0 && document.getElementsByClassName("scavenge-option")[3].querySelector(".free_send_button")) {
-            for(var index = 0; index < $(".input-nicer").length; index++) {
+            for(let index = 0; index < $(".input-nicer").length; index++) {
                $(".input-nicer").eq(index).val(storage.fourth[index]).change();
             }
             setTimeout(function () {
@@ -280,12 +291,14 @@ function nextIteration() {
       console.log("Nível de busca desbloqueado: " + nOptions);
 
       scavengingOptions = ScavengeScreen.village.options;
-      document.getElementsByClassName("fill-all")[0].click();
 
       setTimeout(function () {
          console.log("A procurar aproximadamente a melhor escolha...");
-         totalHaul = Number(document.getElementsByClassName("carry-max")[0].innerText.replaceAll(".", "").replaceAll(",", ""));
+         troops = Array.from(document.getElementsByClassName("units-entry-all"))
+         .map((e, index) => Number(e.innerText.replaceAll("(", "").replaceAll(")", "").replaceAll(".", "").replaceAll(".", "").replaceAll(" ", "")) * scavengeWith[index]);
+         troops.forEach((n, index) => totalHaul += n * troopsLoot[index]);
          console.log("t = " + totalHaul);
+         console.log("troops = " + troops);
          if(totalHaul === 0) {
             console.log("Não tens tropa suficiente.");
             console.log("Reload em 1 minuto.");
@@ -294,7 +307,8 @@ function nextIteration() {
             }, 60 * 1000);
             return;
          }
-         var maxScore;
+
+         let maxScore;
 
          switch(nOptions) {
             case 2:
@@ -318,15 +332,15 @@ function nextIteration() {
 }
 
 function getDuration(option, t) {
-   var memoryOptions = memory.get(t);
+   const memoryOptions = memory.get(t);
    if(memoryOptions) {
-      var result = memoryOptions.get(option);
+      const result = memoryOptions.get(option);
       if(result) {
          return result;
       }
    }
 
-   var calc = Math.round((Math.pow(Math.pow(Math.round(t * totalHaul), 2) * Math.pow(scavengingOptions[option].base.loot_factor, 2) * 100, scavengingOptions[option].base.duration_exponent) + scavengingOptions[option].base.duration_initial_seconds) * scavengingOptions[option].base.duration_factor);
+   const calc = Math.round((Math.pow(Math.pow(Math.round(t * totalHaul), 2) * Math.pow(scavengingOptions[option].base.loot_factor, 2) * 100, scavengingOptions[option].base.duration_exponent) + scavengingOptions[option].base.duration_initial_seconds) * scavengingOptions[option].base.duration_factor);
    
    if(!memoryOptions) {
       memory.set(t, new Map());
@@ -336,7 +350,7 @@ function getDuration(option, t) {
 }
 
 function calcScore(allocations) {
-   var maxDuration = Math.max(Math.max(getDuration(1, allocations.first), getDuration(3, allocations.third)), Math.max(getDuration(2, allocations.second), getDuration(4, allocations.fourth)));
+   const maxDuration = Math.max(Math.max(getDuration(1, allocations.first), getDuration(3, allocations.third)), Math.max(getDuration(2, allocations.second), getDuration(4, allocations.fourth)));
    return (allocations.first * scavengingOptions[1].base.loot_factor * totalHaul / maxDuration)
    + (allocations.second * scavengingOptions[2].base.loot_factor * totalHaul / maxDuration)
    + (allocations.third * scavengingOptions[3].base.loot_factor * totalHaul / maxDuration)
