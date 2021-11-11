@@ -150,7 +150,7 @@ function fourthDegreeIteration() {
 
    return maxScore;
 }
-
+/*
 function isLastAllocation(i, troops) {
    for(let j = i + 1; j < troopsAllocationOrder.length; j++) {
       if(troops[troopsAllocationOrder[j]] == 0) {
@@ -159,7 +159,7 @@ function isLastAllocation(i, troops) {
       return false;
    }
    return true;
-}
+}*/
 
 function allocate(maxScore) {
    var troops = Array.from(document.getElementsByClassName("input-nicer")).map(i => Number(i.value));
@@ -181,7 +181,7 @@ function allocate(maxScore) {
          }
          //console.log("tropa detetada:" + troopsAllocationOrder[i]);
          //console.log("min entre " + troops[troopsAllocationOrder[i]] + " e " + Math.floor(allocationsEstimate / troopsLoot[troopsAllocationOrder[i]]));
-         var quantity = !(nOption === nOptions - 1 && isLastAllocation(i, troops)) ? Math.min(troops[troopsAllocationOrder[i]], Math.floor(allocationsEstimate / troopsLoot[troopsAllocationOrder[i]])) : troops[troopsAllocationOrder[i]];
+         var quantity = !(nOption === nOptions - 1/* && isLastAllocation(i, troops)*/) ? Math.min(troops[troopsAllocationOrder[i]], Math.floor(allocationsEstimate / troopsLoot[troopsAllocationOrder[i]])) : troops[troopsAllocationOrder[i]];
          //console.log("quantity: " + quantity);
          populationSum += troopsPopulation[troopsAllocationOrder[i]] * quantity;
          allocation[troopsAllocationOrder[i]] = quantity;
@@ -191,6 +191,11 @@ function allocate(maxScore) {
       console.log(allocation);
       if(populationSum >= 10) {
          todo[Object.keys(todo)[nOption]] = allocation;
+      } else {
+         allocation.forEach((t, index) => {
+            allocationsEstimate += t * troopsLoot[index];
+            troops[index] += t;
+         });
       }
    }
    localStorage["$sc$" + getCurrentVillage() + "$sc$"] = JSON.stringify(todo);
@@ -270,6 +275,14 @@ function nextIteration() {
       console.log("A procurar aproximadamente a melhor escolha...");
       totalHaul = Number(document.getElementsByClassName("carry-max")[0].innerText.replaceAll(".", "").replaceAll(",", ""));
       console.log("t = " + totalHaul);
+      if(totalHaul === 0) {
+         console.log("Não tens tropa suficiente.");
+         console.log("Reload em 1 minuto.");
+         setTimeout(function () {
+            window.location.reload(true);
+         }, 60 * 1000);
+         return;
+      }
       var maxScore;
 
       switch(nOptions) {
