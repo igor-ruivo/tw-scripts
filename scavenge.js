@@ -4,7 +4,7 @@
 // @author		         Igor Ruivo
 // @include             http*://*screen=place*mode=scavenge*
 // @version     	      0.0.1
-// @supportURL          https://github.com/igor-ruivo/tw-scriptsjs
+// @supportURL          https://github.com/igor-ruivo/tw-scripts
 // @grant               GM_getResourceText
 // @grant               GM_addStyle
 // @grant               GM_getValue
@@ -33,6 +33,17 @@ const troopsAllocationOrder = [
    1,
    2,
    3
+];
+
+const troopsPopulation = [
+   1,
+   1,
+   1,
+   1,
+   4,
+   5,
+   6,
+   10
 ];
 
 const memory = new Map();
@@ -162,6 +173,7 @@ function allocate(maxScore) {
       console.log("opção " + nOption + ":");
       var allocation = [0, 0, 0, 0, 0, 0, 0, 0];
       var allocationsEstimate = maxScore.allocations[nOption] * totalHaul;
+      var populationSum = 0;
       //console.log("quero alocar " + allocationsEstimate + " recursos");
       for(let i = 0; i < troopsAllocationOrder.length; i++) {
          if(troops[troopsAllocationOrder[i]] == 0) {
@@ -171,17 +183,18 @@ function allocate(maxScore) {
          //console.log("min entre " + troops[troopsAllocationOrder[i]] + " e " + Math.floor(allocationsEstimate / troopsLoot[troopsAllocationOrder[i]]));
          var quantity = !(nOption === nOptions - 1 && isLastAllocation(i, troops)) ? Math.min(troops[troopsAllocationOrder[i]], Math.floor(allocationsEstimate / troopsLoot[troopsAllocationOrder[i]])) : troops[troopsAllocationOrder[i]];
          //console.log("quantity: " + quantity);
+         populationSum += troopsPopulation[troopsAllocationOrder[i]] * quantity;
          allocation[troopsAllocationOrder[i]] = quantity;
          troops[troopsAllocationOrder[i]] -= quantity;
          allocationsEstimate -= quantity * troopsLoot[troopsAllocationOrder[i]];
       }
       console.log(allocation);
-      todo[Object.keys(todo)[nOption]] = allocation;
-      //Array.from(document.getElementsByClassName("input-nicer")).forEach((e, index) => e.value = allocation[index]);
-      //document.getElementsByClassName("free_send_button")[nOption].click();
-      localStorage["$sc$" + getCurrentVillage() + "$sc$"] = JSON.stringify(todo);
-      window.location.reload(true);
+      if(populationSum >= 10) {
+         todo[Object.keys(todo)[nOption]] = allocation;
+      }
    }
+   localStorage["$sc$" + getCurrentVillage() + "$sc$"] = JSON.stringify(todo);
+   window.location.reload(true);
 }
 
 function getCurrentVillage() {
