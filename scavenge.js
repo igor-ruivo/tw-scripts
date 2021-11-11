@@ -22,7 +22,7 @@ const scavengeWith = [
    false, //light
    true, //marcher
    true, //heavy
-   true //knight
+   false //knight
 ]
 
 const troopsLoot = [
