@@ -16,17 +16,12 @@ const setupIntervalTimerInMillis = 500;
 const waitTimePerPageOrVillageChange = 5000;
 
 // set maxMinutesBetweenAttacks = Infinity if you don't want to use this feature
-const maxMinutesBetweenAttacks = 30;
+const maxMinutesBetweenAttacks = Infinity;
 
 const farmVillages = [
    {
-      coordinates: "746|588",
-      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0 },
-      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 }
-   },
-   {
-      coordinates: "743|587",
-      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 },
+      coordinates: "405|439",
+      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0 },
       B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0 }
    }
 ];

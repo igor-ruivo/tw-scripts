@@ -20,7 +20,7 @@ const offsetTimeInMillis = 3000;
 const blockResourceTrade = {
 	wood: false,
 	stone: false,
-	iron: true
+	iron: false
 };
 
 (function () {

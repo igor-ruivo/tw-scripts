@@ -71,23 +71,10 @@ let troops;
 })();
 
 function firstDegreeIteration() {
-   const maxScore = {
+   return {
       score: 0,
-      allocations: [0, 0, 0, 0]
+      allocations: [1, 0, 0, 0]
    };
-
-   for(let i = 0.99; i <= 1; i += 0.00001) {
-      if(Math.round(i * totalHaul) < 250) {
-         continue;
-      }
-      const score = calcScore({first: i, second: 0, third: 0, fourth: 0});
-      if(score > maxScore.score) {
-         maxScore.score = score;
-         maxScore.allocations = [i, 0, 0, 0];
-      }
-   }
-
-   return maxScore;
 }
 
 function secondDegreeIteration() {
@@ -240,7 +227,7 @@ function nextIteration() {
    nOptions = Number(document.getElementsByClassName("scavenge-option").length) - Number(document.getElementsByClassName("unlock-button").length) - Number(document.getElementsByClassName("unlock-countdown-icon").length);
 
    if(nOptions < 1) {
-      console.log("Precisas de pelo menos 1 buscas desbloqueada para utilizar esta ferramenta.");
+      console.log("Precisas de pelo menos 1 busca desbloqueada para utilizar esta ferramenta.");
       console.log("Reload em 1 minuto.");
       setTimeout(function () {
          window.location.reload(true);
@@ -355,9 +342,6 @@ function nextIteration() {
             default:
                throw new Error("Invalid nOptions.");
          }
-
-         console.log(maxScore);
-         console.log("Recursos por dia: " + maxScore.score * 24 * 60 * 60);
          allocate(maxScore);
       }, setupIntervalTimerInMillis * 2);
    }
