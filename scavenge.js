@@ -70,6 +70,26 @@ let troops;
    }, setupIntervalTimerInMillis);
 })();
 
+function firstDegreeIteration() {
+   const maxScore = {
+      score: 0,
+      allocations: [0, 0, 0, 0]
+   };
+
+   for(let i = 0.99; i <= 1; i += 0.00001) {
+      if(Math.round(i * totalHaul) < 250) {
+         continue;
+      }
+      const score = calcScore({first: i, second: 0, third: 0, fourth: 0});
+      if(score > maxScore.score) {
+         maxScore.score = score;
+         maxScore.allocations = [i, 0, 0, 0];
+      }
+   }
+
+   return maxScore;
+}
+
 function secondDegreeIteration() {
    const maxScore = {
       score: 0,
@@ -83,6 +103,9 @@ function secondDegreeIteration() {
          }
          /*optimization:*/
          if(i + j < 0.99) {
+            continue;
+         }
+         if(Math.round(i * totalHaul) < 250 || Math.round(j * totalHaul) < 250) {
             continue;
          }
          const score = calcScore({first: i, second: j, third: 0, fourth: 0});
@@ -113,6 +136,9 @@ function thirdDegreeIteration() {
             }
             /*optimization:*/
             if(i + j + k < 0.99) {
+               continue;
+            }
+            if(Math.round(i * totalHaul) < 250 || Math.round(j * totalHaul) < 250 || Math.round(k * totalHaul) < 250) {
                continue;
             }
             const score = calcScore({first: i, second: j, third: k, fourth: 0});
@@ -148,6 +174,9 @@ function fourthDegreeIteration() {
                }
                /*optimization:*/
                if(i + j + k + l < 0.99) {
+                  continue;
+               }
+               if(Math.round(i * totalHaul) < 250 || Math.round(j * totalHaul) < 250 || Math.round(k * totalHaul) < 250 || Math.round(l * totalHaul) < 250) {
                   continue;
                }
                const score = calcScore({first: i, second: j, third: k, fourth: l});
@@ -210,8 +239,8 @@ function getCurrentVillage() {
 function nextIteration() {
    nOptions = Number(document.getElementsByClassName("scavenge-option").length) - Number(document.getElementsByClassName("unlock-button").length) - Number(document.getElementsByClassName("unlock-countdown-icon").length);
 
-   if(nOptions < 2) {
-      console.log("Precisas de pelo menos 2 diferentes buscas desbloqueadas para utilizar esta ferramenta.");
+   if(nOptions < 1) {
+      console.log("Precisas de pelo menos 1 buscas desbloqueada para utilizar esta ferramenta.");
       console.log("Reload em 1 minuto.");
       setTimeout(function () {
          window.location.reload(true);
@@ -299,8 +328,8 @@ function nextIteration() {
          troops.forEach((n, index) => totalHaul += n * troopsLoot[index]);
          console.log("t = " + totalHaul);
          console.log("troops = " + troops);
-         if(totalHaul === 0) {
-            console.log("Não tens tropa suficiente.");
+         if(totalHaul < 250) {
+            console.log("Não tens tropa suficiente. Só podes utilizar a ferramenta com pelo menos 250 de capacidade de saque.");
             console.log("Reload em 1 minuto.");
             setTimeout(function () {
                window.location.reload(true);
@@ -311,6 +340,9 @@ function nextIteration() {
          let maxScore;
 
          switch(nOptions) {
+            case 1:
+               maxScore = firstDegreeIteration();
+               break;
             case 2:
                maxScore = secondDegreeIteration();
                break;
