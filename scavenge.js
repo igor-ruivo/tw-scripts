@@ -190,7 +190,7 @@ function getCurrentVillage() {
 }
 
 function nextIteration() {
-   nOptions = Number(document.getElementsByClassName("scavenge-option").length) - Number(document.getElementsByClassName("unlock-button").length);
+   nOptions = Number(document.getElementsByClassName("scavenge-option").length) - Number(document.getElementsByClassName("unlock-button").length) - Number(document.getElementsByClassName("unlock-countdown-icon").length);
 
    if(nOptions < 2) {
       console.log("Precisas de pelo menos 2 diferentes buscas desbloqueadas para utilizar esta ferramenta.");
