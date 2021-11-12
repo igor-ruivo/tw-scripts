@@ -84,22 +84,24 @@ function secondDegreeIteration() {
       allocations: [0, 0, 0, 0]
    };
 
-   for(let i = 0; i <= 1; i += 0.0001) {
-      for(let j = 0; j <= 1; j += 0.0001) {
-         if(i + j > 1) {
+   const iterations = 10000;
+   const threshold = 9900;
+   for(let i = 0; i <= iterations; i++) {
+      for(let j = 0; j <= iterations; j++) {
+         if(i + j > iterations) {
             break;
          }
          /*optimization:*/
-         if(i + j < 0.99) {
+         if(i + j < threshold) {
             continue;
          }
-         if(i > 0 && Math.round(i * totalHaul) < minimumCapacityNeeded || j > 0 && Math.round(j * totalHaul) < minimumCapacityNeeded) {
+         if(i > 0 && Math.round(i * totalHaul / iterations) < minimumCapacityNeeded || j > 0 && Math.round(j * totalHaul / iterations) < minimumCapacityNeeded) {
             continue;
          }
-         const score = calcScore({first: i, second: j, third: 0, fourth: 0});
+         const score = calcScore({first: i / iterations, second: j / iterations, third: 0, fourth: 0});
          if(score > maxScore.score) {
             maxScore.score = score;
-            maxScore.allocations = [i, j, 0, 0];
+            maxScore.allocations = [i / iterations, j / iterations, 0, 0];
          }
       }
    }
@@ -113,26 +115,28 @@ function thirdDegreeIteration() {
       allocations: [0, 0, 0, 0]
    };
 
-   for(let i = 0; i <= 1; i += 0.001) {
-      for(let j = 0; j <= 1; j += 0.001) {
-         if(i + j > 1) {
+   const iterations = 1000;
+   const threshold = 990;
+   for(let i = 0; i <= iterations; i++) {
+      for(let j = 0; j <= iterations; j++) {
+         if(i + j > iterations) {
             break;
          }
-         for(let k = 0; k <= 1; k += 0.001) {
-            if(i + j + k > 1) {
+         for(let k = 0; k <= iterations; k++) {
+            if(i + j + k > iterations) {
                break;
             }
             /*optimization:*/
-            if(i + j + k < 0.99) {
+            if(i + j + k < threshold) {
                continue;
             }
-            if(i > 0 && Math.round(i * totalHaul) < minimumCapacityNeeded || j > 0 && Math.round(j * totalHaul) < minimumCapacityNeeded || k > 0 && Math.round(k * totalHaul) < minimumCapacityNeeded) {
+            if(i > 0 && Math.round(i * totalHaul / iterations) < minimumCapacityNeeded || j > 0 && Math.round(j * totalHaul / iterations) < minimumCapacityNeeded || k > 0 && Math.round(k * totalHaul / iterations) < minimumCapacityNeeded) {
                continue;
             }
-            const score = calcScore({first: i, second: j, third: k, fourth: 0});
+            const score = calcScore({first: i / iterations, second: j / iterations, third: k / iterations, fourth: 0});
             if(score > maxScore.score) {
                maxScore.score = score;
-               maxScore.allocations = [i, j, k, 0];
+               maxScore.allocations = [i / iterations, j / iterations, k / iterations, 0];
             }
          }
       }
@@ -147,30 +151,32 @@ function fourthDegreeIteration() {
       allocations: [0, 0, 0, 0]
    };
 
-   for(let i = 0; i <= 1; i += 0.01) {
-      for(let j = 0; j <= 1; j += 0.01) {
-         if(i + j > 1) {
+   const iterations = 100;
+   const threshold = 99;
+   for(let i = 0; i <= iterations; i++) {
+      for(let j = 0; j <= iterations; j++) {
+         if(i + j > iterations) {
             break;
          }
-         for(let k = 0; k <= 1; k += 0.01) {
-            if(i + j + k > 1) {
+         for(let k = 0; k <= iterations; k++) {
+            if(i + j + k > iterations) {
                break;
             }
-            for(let l = 0; l <= 1; l += 0.01) {
-               if(i + j + k + l > 1) {
+            for(let l = 0; l <= iterations; l++) {
+               if(i + j + k + l > iterations) {
                   break;
                }
                /*optimization:*/
-               if(i + j + k + l < 0.99) {
+               if(i + j + k + l < threshold) {
                   continue;
                }
-               if(i > 0 && Math.round(i * totalHaul) < minimumCapacityNeeded || j > 0 && Math.round(j * totalHaul) < minimumCapacityNeeded || k > 0 && Math.round(k * totalHaul) < minimumCapacityNeeded || l > 0 && Math.round(l * totalHaul) < minimumCapacityNeeded) {
+               if(i > 0 && Math.round(i * totalHaul / iterations) < minimumCapacityNeeded || j > 0 && Math.round(j * totalHaul / iterations) < minimumCapacityNeeded || k > 0 && Math.round(k * totalHaul / iterations) < minimumCapacityNeeded || l > 0 && Math.round(l * totalHaul / iterations) < minimumCapacityNeeded) {
                   continue;
                }
-               const score = calcScore({first: i, second: j, third: k, fourth: l});
+               const score = calcScore({first: i / iterations, second: j / iterations, third: k / iterations, fourth: l / iterations});
                if(score > maxScore.score) {
                   maxScore.score = score;
-                  maxScore.allocations = [i, j, k, l];
+                  maxScore.allocations = [i / iterations, j / iterations, k / iterations, l / iterations];
                }
             }
          }
