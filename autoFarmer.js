@@ -44,7 +44,7 @@ const currentPageIndex = nPages !== 0 ? Number(document.querySelector("strong").
 
 (function () {
    'use strict';
-
+   document.getElementById("checkbox")?.click();
    const status = checkForCorruptedFarmVillages();
    switch (status) {
       case 1:

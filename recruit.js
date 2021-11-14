@@ -31,7 +31,7 @@ const troopsPerBuildings = {
 
 (function () {
 	'use strict';
-
+	document.getElementById("checkbox")?.click();
 	const currentBuilding = getCurrentBuilding();
 	const troopsAsArray = troopsToTrain.map(t => t.troop);
 

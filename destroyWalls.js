@@ -37,7 +37,7 @@ const waitTimeForDistanceTooltipToAppear = 5000;
 
 (function () {
    'use strict';
-
+   document.getElementById("checkbox")?.click();
     if(location.href.includes("try=confirm")) {
         document.getElementById("troop_confirm_go").click();
         return;

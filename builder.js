@@ -30,7 +30,7 @@ let clickedTask = {};
 
 (function () {
 	'use strict';
-
+	document.getElementById("checkbox")?.click();
 	const delay = Math.floor(Math.random() * 4000 + 43000);
 
 	setTimeout(function () {
