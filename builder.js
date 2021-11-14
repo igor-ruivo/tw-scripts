@@ -12,6 +12,7 @@
 // ==/UserScript==
 
 //configs
+/*
 const forceOrder = false;
 const buildStorageWhenNeeded = true;
 const buildFarmWhenNeeded = true;
@@ -21,7 +22,7 @@ const maxStorageLevel = 30;
 const maxFarmLevel = 30;
 const maxBuildQueueLength = 2;
 const buildQueueOffset = 2;
-const offsetTimeInMillis = 3000;
+const offsetTimeInMillis = 3000;*/
 
 const levels = loadBuildingsAndLevels();
 const userBuildList = loadUserBuildList();
