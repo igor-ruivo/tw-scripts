@@ -20,7 +20,7 @@ const maxStoragePercentage = 90;
 const maxFarmPercentage = 95;
 const maxStorageLevel = 30;
 const maxFarmLevel = 30;
-const maxBuildQueueLength = 2;
+const maxBuildQueueLength = 5;
 const buildQueueOffset = 2;
 const offsetTimeInMillis = 3000;
 
@@ -169,12 +169,10 @@ function loadUserBuildList() {
 	const buildList = [];
 
 	//change
+	buildList.push({ village: "405|439", building: "barracks", level: 25 });
+	buildList.push({ village: "405|439", building: "stable", level: 20 });
 	buildList.push({ village: "405|439", building: "wood", level: 30 });
 	buildList.push({ village: "405|439", building: "stone", level: 30 });
 	buildList.push({ village: "405|439", building: "iron", level: 30 });
-    buildList.push({ village: "405|439", building: "main", level: 10 });
-	buildList.push({ village: "405|439", building: "barracks", level: 5 });
-	buildList.push({ village: "405|439", building: "smith", level: 5 });
-	buildList.push({ village: "405|439", building: "stable", level: 3 });
 	return removeCompletedTasks(buildList);
 }

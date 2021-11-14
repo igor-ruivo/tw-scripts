@@ -103,7 +103,7 @@ const currentPageIndex = nPages !== 0 ? Number(document.querySelector("strong").
          }
          localStorage["$$autoFarmer$$"] = JSON.stringify(getCurrentVillage());
          const nextVillageButton = document.getElementById("village_switch_right");
-         nextVillageButton ? nextVillageButton.click() : window.location.reload(true);
+         nextVillageButton ? nextVillageButton.click() : window.location.href = window.location.href.split("am_farm")[0] + "am_farm" + "&order=distance&dir=asc&Farm_page=0";;
       }, timer);
    }, setupIntervalTimerInMillis * 8);
 })();
