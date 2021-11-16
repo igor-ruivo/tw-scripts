@@ -66,11 +66,8 @@ const currentPageIndex = nPages !== 0 ? Number(document.querySelector("strong").
    }
 
    if (!farmVillages.some(v => v.coordinates === getCurrentVillage())) {
-      if (farmVillages.length <= 1) {
-         return;
-      }
       setTimeout(function () {
-         document.getElementById("village_switch_right").click();
+         document.getElementById("village_switch_right")?.click();
       }, waitTimePerPageOrVillageChange);
       return;
    }
