@@ -20,7 +20,6 @@ const refreshTimeInMinutes = 2;
 	document.getElementById("checkbox")?.click();
 	setTimeout(function () {
 		nextIteration();
-		console.log("Reload dentro de " + refreshTimeInMinutes + " minutos...");
 	}, offsetTimeInMillis);
 
 	setTimeout(function () {
@@ -50,7 +49,16 @@ function nextIteration() {
 	});
 	const finalInput = inputs[resources.filter(r => !inputs[r[0]].disabled)[0][0]];
 	finalInput.value = 1;
-	document.getElementsByClassName("btn-premium-exchange-buy")[0].click();
-	document.getElementsByClassName("btn-confirm-yes")[0].click();
-	window.location.reload(true);
+	
+	setTimeout(function () {
+		document.getElementsByClassName("btn-premium-exchange-buy")[0].click();
+	}, 2 * offsetTimeInMillis);
+
+	setTimeout(function () {
+		document.getElementsByClassName("btn-confirm-yes")[0].click();
+	}, 3 * offsetTimeInMillis);
+
+	setTimeout(function () {
+		window.location.reload(true);
+	}, 4 * offsetTimeInMillis);
 }
