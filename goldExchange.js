@@ -58,7 +58,7 @@ function nextIteration() {
 	const finalIndex = capacities.filter(r => !inputs[r[0]].disabled)[0][0];
 	
 	const finalInput = inputs[finalIndex];
-	finalInput.value = Math.min(resources[finalIndex][1], maximumTransport === 1000 ? 1 : maximumTransport < capacities[finalIndex][1] ? Math.round(maximumTransport / 2 / 1000) * 1000 : capacities[finalIndex][1]);
+	finalInput.value = Math.min(resources[finalIndex][1], maximumTransport === 1000 ? 1 : maximumTransport < capacities[0][1] ? Math.round(maximumTransport / 2 / 1000) * 1000 : capacities[0][1]);
 	
 	setTimeout(function () {
 		document.getElementsByClassName("btn-premium-exchange-buy")[0].click();
