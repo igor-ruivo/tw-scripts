@@ -31,7 +31,9 @@ let clickedTask = {};
 
 (function () {
 	'use strict';
-	document.getElementById("checkbox")?.click();
+	setTimeout(function () {
+		document.getElementById("checkbox")?.click();
+	}, 2 * 1000);
 	const delay = Math.floor(Math.random() * 4000 + 43000);
 
 	setTimeout(function () {
@@ -169,10 +171,9 @@ function loadUserBuildList() {
 	const buildList = [];
 
 	//change
+	buildList.push({ village: "405|439", building: "snob", level: 1 });
+	buildList.push({ village: "405|439", building: "market", level: 25 });
 	buildList.push({ village: "405|439", building: "barracks", level: 25 });
 	buildList.push({ village: "405|439", building: "stable", level: 20 });
-	buildList.push({ village: "405|439", building: "wood", level: 30 });
-	buildList.push({ village: "405|439", building: "stone", level: 30 });
-	buildList.push({ village: "405|439", building: "iron", level: 30 });
 	return removeCompletedTasks(buildList);
 }

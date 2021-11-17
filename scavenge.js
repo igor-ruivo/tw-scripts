@@ -66,7 +66,9 @@ let troops;
 
 (function () {
    'use strict';
-   document.getElementById("checkbox")?.click();
+   setTimeout(function () {
+		document.getElementById("checkbox")?.click();
+	}, 2 * 1000);
    setTimeout(function () {
       nextIteration();
    }, setupIntervalTimerInMillis);

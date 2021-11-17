@@ -16,13 +16,13 @@ const setupIntervalTimerInMillis = 500;
 const waitTimePerPageOrVillageChange = 5000;
 
 // set maxMinutesBetweenAttacks = Infinity if you don't want to use this feature
-const maxMinutesBetweenAttacks = Infinity;
+const maxMinutesBetweenAttacks = 75;
 
 const farmVillages = [
    {
       coordinates: "405|439",
-      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0 },
-      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0 }
+      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0 },
+      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 }
    }
 ];
 
@@ -44,7 +44,9 @@ const currentPageIndex = nPages !== 0 ? Number(document.querySelector("strong").
 
 (function () {
    'use strict';
-   document.getElementById("checkbox")?.click();
+   setTimeout(function () {
+      document.getElementById("checkbox")?.click();
+   }, 2 * 1000);
    const status = checkForCorruptedFarmVillages();
    switch (status) {
       case 1:

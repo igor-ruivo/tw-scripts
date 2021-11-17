@@ -14,12 +14,12 @@
 // ==/UserScript==
 
 //configs
-const avoidUnevenResources = true;
+const avoidUnevenResources = false;
 const troopsToTrain = [
-	{troop: "axe", train: 10, max: 7000},
-	{troop: "light", train: 5, max: 3000}
+	{troop: "sword", train: 5, max: 10000},
+	{troop: "heavy", train: 2, max: 1000}
 ];
-const recruitmentCicleTimeInMinutes = 10;
+const recruitmentCicleTimeInMinutes = 30;
 const timeoutBetweenDifferentTroopsTrainInSameBuilding = 2000;
 const offsetTimeInMillis = 3000;
 
@@ -31,7 +31,9 @@ const troopsPerBuildings = {
 
 (function () {
 	'use strict';
-	document.getElementById("checkbox")?.click();
+	setTimeout(function () {
+		document.getElementById("checkbox")?.click();
+	}, 2 * 1000);
 	const currentBuilding = getCurrentBuilding();
 	const troopsAsArray = troopsToTrain.map(t => t.troop);
 

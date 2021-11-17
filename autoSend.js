@@ -44,7 +44,9 @@ let resourcesPeekDate;
 
 (function () {
 	'use strict';
-	document.getElementById("checkbox")?.click();
+	setTimeout(function () {
+		document.getElementById("checkbox")?.click();
+	}, 2 * 1000);
 	garbageCollector();
 
 	const helperSystemStatus = checkForCorruptedHelpingSystem();

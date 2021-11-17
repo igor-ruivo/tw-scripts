@@ -25,7 +25,9 @@ const blockResourceTrade = {
 
 (function () {
 	'use strict';
-	document.getElementById("checkbox")?.click();
+	setTimeout(function () {
+		document.getElementById("checkbox")?.click();
+	}, 2 * 1000);
 	setTimeout(function () {
 		if(nextIteration()) {
 			console.log("Reload dentro de 10 minutos...");
