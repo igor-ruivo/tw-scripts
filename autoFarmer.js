@@ -69,8 +69,10 @@ const currentPageIndex = nPages !== 0 ? Number(document.querySelector("strong").
 
    if (localStorage["$$autoFarmer$$"] && getCurrentVillage() !== JSON.parse(localStorage["$$autoFarmer$$"])) {
       localStorage["$$autoFarmer$$"] = JSON.stringify(getCurrentVillage());
-      window.location.href = window.location.href.split("am_farm")[0] + "am_farm" + "&order=distance&dir=asc&Farm_page=0";
-      return;
+      if(!window.location.href.includes("Farm_page=0")) {
+         window.location.href = window.location.href.split("am_farm")[0] + "am_farm" + "&order=distance&dir=asc&Farm_page=0";
+         return;
+      }
    }
 
    if (!farmVillages.some(v => v.coordinates === getCurrentVillage())) {
