@@ -67,16 +67,16 @@ const currentPageIndex = nPages !== 0 ? Number(document.querySelector("strong").
       return;
    }
 
+   if (localStorage["$$autoFarmer$$"] && getCurrentVillage() !== JSON.parse(localStorage["$$autoFarmer$$"])) {
+      localStorage["$$autoFarmer$$"] = JSON.stringify(getCurrentVillage());
+      window.location.href = window.location.href.split("am_farm")[0] + "am_farm" + "&order=distance&dir=asc&Farm_page=0";
+      return;
+   }
+
    if (!farmVillages.some(v => v.coordinates === getCurrentVillage())) {
       setTimeout(function () {
          document.getElementById("village_switch_right")?.click();
       }, waitTimePerPageOrVillageChange);
-      return;
-   }
-
-   if (localStorage["$$autoFarmer$$"] && getCurrentVillage() !== JSON.parse(localStorage["$$autoFarmer$$"])) {
-      localStorage["$$autoFarmer$$"] = JSON.stringify(getCurrentVillage());
-      window.location.href = window.location.href.split("am_farm")[0] + "am_farm" + "&order=distance&dir=asc&Farm_page=0";
       return;
    }
 
