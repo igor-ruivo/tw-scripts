@@ -31,6 +31,7 @@ const troopsPerBuildings = {
 
 (function () {
 	'use strict';
+	window.sessionStorage.prevWin = window.location.href;
 	setTimeout(function () {
 		document.getElementById("checkbox")?.click();
 	}, 2 * 1000);

@@ -13,7 +13,7 @@
 
 //configs
 
-const useGold = false;
+const useGold = true;
 const hoursToUseGold = 4;
 const forceOrder = false;
 const buildStorageWhenNeeded = true;
@@ -33,6 +33,7 @@ let clickedTask = {};
 
 (function () {
 	'use strict';
+	window.sessionStorage.prevWin = window.location.href;
 	setTimeout(function () {
 		document.getElementById("checkbox")?.click();
 	}, 2 * 1000);

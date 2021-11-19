@@ -14,27 +14,16 @@
 //configs
 const helpingSystem = [
 	{
-		sender: "746|588",
+		sender: "405|439",
 		saveStoragePercentage: 0,
 		receivers: [
 			{
-				village: "740|584",
-				fillStoragePercentage: 70,
+				village: "403|439",
+				fillStoragePercentage: 50,
 				minimumToSend: 1000
 			}
 		]
-	},
-	{
-		sender: "743|587",
-		saveStoragePercentage: 30,
-		receivers: [
-			{
-				village: "740|584",
-				fillStoragePercentage: 70,
-				minimumToSend: 1000
-			}
-		]
-	},
+	}
 ];
 
 const singleTradeForEachVillageAtTime = false;
@@ -44,6 +33,7 @@ let resourcesPeekDate;
 
 (function () {
 	'use strict';
+	window.sessionStorage.prevWin = window.location.href;
 	setTimeout(function () {
 		document.getElementById("checkbox")?.click();
 	}, 2 * 1000);
