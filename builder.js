@@ -26,8 +26,8 @@ const maxBuildQueueLength = 5;
 const buildQueueOffset = 2;
 const offsetTimeInMillis = 3000;
 
-const levels = loadBuildingsAndLevels();
-const userBuildList = loadUserBuildList();
+let levels;
+let userBuildList;
 
 let clickedTask = {};
 
@@ -39,14 +39,26 @@ let clickedTask = {};
 	const delay = Math.floor(Math.random() * 4000 + 43000);
 
 	setTimeout(function () {
+		console.log("A acabar tarefas gratuitas...");
+		completeFreeTasks();
+	}, offsetTimeInMillis);
+
+	setTimeout(function () {
+		console.log("A utilizar ouro...");
+		if(useGold) {
+			spendGold();
+		}
+	}, offsetTimeInMillis * 2);
+
+	setTimeout(function () {
 		nextIteration();
 		console.log("Reload dentro de " + Math.round(delay / 1000) + " segundos...");
-	}, offsetTimeInMillis);
+	}, offsetTimeInMillis * 3);
 
 	setTimeout(function () {
 		const nextVillageButton = document.getElementById("village_switch_right");
 		nextVillageButton ? nextVillageButton.click() : window.location.reload(true);
-	}, delay + offsetTimeInMillis);
+	}, delay + offsetTimeInMillis * 3);
 })();
 
 function getDate() {
@@ -57,10 +69,8 @@ function getDate() {
 }
 
 function nextIteration() {
-	if(useGold) {
-		spendGold();
-	}
-    completeFreeTasks();
+	levels = loadBuildingsAndLevels();
+	userBuildList = loadUserBuildList();
 	const nextBuildTask = getNextBuildTask();
 	if (nextBuildTask) {
 		nextBuildTask.click();
@@ -123,18 +133,17 @@ function removeCompletedTasks(list) {
 
 function completeFreeTasks() {
     Array.from(document.getElementsByClassName("btn-instant-free"))
-	.filter(e => e.style.display !== 'none')
-	.forEach(e => e.click());
+	.filter(e => e.style.display !== 'none')[0]?.click();
 }
 
 function spendGold() {
 	const gold = Number(document.getElementById("premium_points").innerText.replaceAll(",", "").replaceAll(".", ""));
 	if(gold >= 10) {
-		const hours = Array.from(document.getElementsByClassName("sortable_row")).map(e => Number(e.children[1].children[0].innerText.split(":")[0]));
-		const buttons = Array.from(document.getElementsByClassName("sortable_row")).map(e => e.children[2].children[0]);
-		for(let i = 0; i < buttons.length; i++) {
-			if(hours[i] >= hoursToUseGold) {
-				buttons[i].click();
+		const candidates = Array.from(document.getElementById("buildqueue").children).filter(e => e.classList.contains("sortable_row") && e.querySelector(".order_feature"));
+		for(let i = 0; i < candidates.length; i++) {
+			const hours = Number(candidates[i].children[1].children[0].innerText.split(":")[0]);
+			if(hours >= hoursToUseGold) {
+				candidates[i].querySelector(".order_feature").click();
 				return;
 			}
 		}
@@ -190,8 +199,17 @@ function loadUserBuildList() {
 	const buildList = [];
 
 	//change
-	buildList.push({ village: "405|439", building: "barracks", level: 25 });
-	buildList.push({ village: "405|439", building: "stable", level: 20 });
-	buildList.push({ village: "405|439", building: "market", level: 25 });
+	//buildList.push({ village: "405|439", building: "barracks", level: 25 });
+	//buildList.push({ village: "405|439", building: "stable", level: 20 });
+	//buildList.push({ village: "405|439", building: "market", level: 25 });
+	buildList.push({ village: "405|439", building: "wood", level: 30 });
+	buildList.push({ village: "405|439", building: "stone", level: 30 });
+	buildList.push({ village: "405|439", building: "iron", level: 30 });
+
+	buildList.push({ village: "403|439", building: "smith", level: 5 });
+	buildList.push({ village: "403|439", building: "stable", level: 3 });
+	buildList.push({ village: "403|439", building: "wood", level: 30 });
+	buildList.push({ village: "403|439", building: "stone", level: 30 });
+	buildList.push({ village: "403|439", building: "iron", level: 30 });
 	return removeCompletedTasks(buildList);
 }
