@@ -25,6 +25,7 @@ const blockResourceTrade = {
 
 (function () {
 	'use strict';
+	window.sessionStorage.prevWin = window.location.href;
 	setTimeout(function () {
 		document.getElementById("checkbox")?.click();
 	}, 2 * 1000);
@@ -76,10 +77,13 @@ function checkIfShouldDeleteOffers(rate, amountToTrade, storageSpace) {
 		const outgoing = columns[1];
 
 		const outResources = {
-			wood: Number(outgoing.querySelector(".icon.header.wood")?.nextSibling?.textContent ?? 0) * quantity,
-			stone: Number(outgoing.querySelector(".icon.header.stone")?.nextSibling?.textContent ?? 0) * quantity,
-			iron: Number(outgoing.querySelector(".icon.header.iron")?.nextSibling?.textContent ?? 0) * quantity
+			wood: Number(outgoing.querySelector(".icon.header.wood")?.nextSibling?.textContent?.replaceAll(".", "")?.replaceAll(",", "") ?? 0) * quantity,
+			stone: Number(outgoing.querySelector(".icon.header.stone")?.nextSibling?.textContent?.replaceAll(".", "")?.replaceAll(",", "") ?? 0) * quantity,
+			iron: Number(outgoing.querySelector(".icon.header.iron")?.nextSibling?.textContent?.replaceAll(".", "")?.replaceAll(",", "") ?? 0) * quantity
 		};
+
+		console.log("i");
+		console.log(outResources);
 
 		const simulatedResources = sumResources(getCertainResources(), outResources);
 		const newResourcesInfo = compareResources(simulatedResources);

@@ -133,8 +133,12 @@ function removeCompletedTasks(list) {
 }
 
 function completeFreeTasks() {
-    Array.from(document.getElementsByClassName("btn-instant-free"))
-	.filter(e => e.style.display !== 'none')[0]?.click();
+    const target = Array.from(document.getElementsByClassName("btn-instant-free"))
+	.filter(e => e.style.display !== 'none')[0];
+	target?.click();
+	if(target) {
+		window.location.reload(true);
+	}
 }
 
 function spendGold() {
