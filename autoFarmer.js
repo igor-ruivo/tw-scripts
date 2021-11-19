@@ -23,6 +23,11 @@ const farmVillages = [
       coordinates: "405|439",
       A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0 },
       B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 }
+   },
+   {
+      coordinates: "403|439",
+      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0 },
+      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0 }
    }
 ];
 
@@ -46,6 +51,9 @@ const currentPageIndex = nPages !== 0 ? Number(document.querySelector("strong").
    'use strict';
    window.sessionStorage.prevWin = window.location.href;
    setTimeout(function () {
+      if(!document.getElementById("wood")) {
+         window.location.href = window.location.href.replace("&action=edit", "");
+      }
       document.getElementById("checkbox")?.click();
    }, 2 * 1000);
    const status = checkForCorruptedFarmVillages();
