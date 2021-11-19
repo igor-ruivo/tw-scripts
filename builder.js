@@ -135,8 +135,8 @@ function removeCompletedTasks(list) {
 function completeFreeTasks() {
     const target = Array.from(document.getElementsByClassName("btn-instant-free"))
 	.filter(e => e.style.display !== 'none')[0];
-	target?.click();
 	if(target) {
+		target.click();
 		window.location.reload(true);
 	}
 }
