@@ -13,7 +13,7 @@
 
 //configs
 
-const useGold = true;
+const useGold = false;
 const hoursToUseGold = 4;
 const forceOrder = false;
 const buildStorageWhenNeeded = true;
