@@ -137,7 +137,9 @@ function completeFreeTasks() {
 	.filter(e => e.style.display !== 'none')[0];
 	if(target) {
 		target.click();
-		window.location.reload(true);
+		setTimeout(function () {
+			window.location.reload(true);
+		}, 1000);
 	}
 }
 
