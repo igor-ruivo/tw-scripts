@@ -240,7 +240,12 @@ function nextIteration() {
       console.log("Precisas de pelo menos 1 busca desbloqueada para utilizar esta ferramenta.");
       console.log("Reload em 1 minuto.");
       setTimeout(function () {
-         window.location.reload(true);
+         const switchVillageButton = document.getElementById("village_switch_right");
+         if(switchVillageButton) {
+            switchVillageButton.click();
+         } else {
+            window.location.reload(true);
+         }
       }, 60 * 1000);
       return;
    }
@@ -309,7 +314,12 @@ function nextIteration() {
          console.log("Há buscas em progresso. Aguarda.");
          console.log("Reload em 1 minuto.");
          setTimeout(function () {
-            window.location.reload(true);
+            const switchVillageButton = document.getElementById("village_switch_right");
+            if(switchVillageButton) {
+               switchVillageButton.click();
+            } else {
+               window.location.reload(true);
+            }
          }, 60 * 1000);
          return;
       }
@@ -329,7 +339,12 @@ function nextIteration() {
             console.log("Não tens tropa suficiente. Só podes utilizar a ferramenta com pelo menos " + minimumCapacityNeeded + " de capacidade de saque.");
             console.log("Reload em 1 minuto.");
             setTimeout(function () {
-               window.location.reload(true);
+               const switchVillageButton = document.getElementById("village_switch_right");
+               if(switchVillageButton) {
+                  switchVillageButton.click();
+               } else {
+                  window.location.reload(true);
+               }
             }, 60 * 1000);
             return;
          }
