@@ -13,6 +13,8 @@
 
 //configs
 
+const useGold = false;
+const hoursToUseGold = 4;
 const forceOrder = false;
 const buildStorageWhenNeeded = true;
 const buildFarmWhenNeeded = true;
@@ -55,6 +57,9 @@ function getDate() {
 }
 
 function nextIteration() {
+	if(useGold) {
+		spendGold();
+	}
     completeFreeTasks();
 	const nextBuildTask = getNextBuildTask();
 	if (nextBuildTask) {
@@ -122,6 +127,20 @@ function completeFreeTasks() {
 	.forEach(e => e.click());
 }
 
+function spendGold() {
+	const gold = Number(document.getElementById("premium_points").innerText.replaceAll(",", "").replaceAll(".", ""));
+	if(gold >= 10) {
+		const hours = Array.from(document.getElementsByClassName("sortable_row")).map(e => Number(e.children[1].children[0].innerText.split(":")[0]));
+		const buttons = Array.from(document.getElementsByClassName("sortable_row")).map(e => e.children[2].children[0]);
+		for(let i = 0; i < buttons.length; i++) {
+			if(hours[i] >= hoursToUseGold) {
+				buttons[i].click();
+				return;
+			}
+		}
+	}
+}
+
 function getNextBuildTask() {
 	if (buildStorageWhenNeeded) {
 		checkStorageForUpgrade(levels["storage"] - 1);
@@ -171,9 +190,8 @@ function loadUserBuildList() {
 	const buildList = [];
 
 	//change
-	buildList.push({ village: "405|439", building: "snob", level: 1 });
-	buildList.push({ village: "405|439", building: "market", level: 25 });
 	buildList.push({ village: "405|439", building: "barracks", level: 25 });
 	buildList.push({ village: "405|439", building: "stable", level: 20 });
+	buildList.push({ village: "405|439", building: "market", level: 25 });
 	return removeCompletedTasks(buildList);
 }
