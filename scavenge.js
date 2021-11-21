@@ -14,6 +14,10 @@
 const setupIntervalTimerInMillis = 1000;
 const minimumCapacityNeeded = 250;
 
+const villages = [
+   "403|439"
+];
+
 const scavengeWith = [
    true, //spear
    true, //sword
@@ -74,6 +78,11 @@ let troops;
       nextIteration();
    }, setupIntervalTimerInMillis);
 })();
+
+function getCurrentVillage() {
+   const villageName = document.getElementById("menu_row2").querySelector("b").innerText.split(" ")[0];
+   return villageName.slice(1, villageName.indexOf(")"));
+}
 
 function firstDegreeIteration() {
    return {
@@ -229,12 +238,19 @@ function allocate(maxScore) {
    }, 5 * 1000);
 }
 
-function getCurrentVillage() {
-   const villageName = document.getElementById("menu_row2").querySelector("b").innerText.split(" ")[0];
-   return villageName.slice(1, villageName.indexOf(")"));
-}
-
 function nextIteration() {
+   if(!villages.includes(getCurrentVillage())) {
+      setTimeout(function () {
+         const switchVillageButton = document.getElementById("village_switch_right");
+         if(switchVillageButton) {
+            switchVillageButton.click();
+         } else {
+            window.location.reload(true);
+         }
+      }, 5 * 1000);
+      return;
+   }
+
    nOptions = Number(document.getElementsByClassName("scavenge-option").length) - Number(document.getElementsByClassName("unlock-button").length) - Number(document.getElementsByClassName("unlock-countdown-icon").length);
 
    if(nOptions < 1) {
