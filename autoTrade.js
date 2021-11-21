@@ -75,17 +75,23 @@ function checkIfShouldDeleteOffers(rate, amountToTrade, storageSpace) {
 		const columns = e.querySelectorAll("td");
 		const checkboxElement = columns[0].children[0];
 		const outgoing = columns[1];
+		const incomming = columns[2];
 
 		const outResources = {
-			wood: Number(outgoing.querySelector(".icon.header.wood")?.nextSibling?.textContent?.replaceAll(".", "")?.replaceAll(",", "") ?? 0) * quantity,
-			stone: Number(outgoing.querySelector(".icon.header.stone")?.nextSibling?.textContent?.replaceAll(".", "")?.replaceAll(",", "") ?? 0) * quantity,
-			iron: Number(outgoing.querySelector(".icon.header.iron")?.nextSibling?.textContent?.replaceAll(".", "")?.replaceAll(",", "") ?? 0) * quantity
+			wood: Number(outgoing.querySelector(".icon.header.wood")?.parentElement.innerText.replaceAll(".", "")?.replaceAll(",", "") ?? 0) * quantity,
+			stone: Number(outgoing.querySelector(".icon.header.stone")?.parentElement.innerText.replaceAll(".", "")?.replaceAll(",", "") ?? 0) * quantity,
+			iron: Number(outgoing.querySelector(".icon.header.iron")?.parentElement.innerText.replaceAll(".", "")?.replaceAll(",", "") ?? 0) * quantity
 		};
 
-		console.log("i");
-		console.log(outResources);
+		const inResources = {
+			wood: Number(incomming.querySelector(".icon.header.wood")?.parentElement.innerText.replaceAll(".", "")?.replaceAll(",", "") ?? 0) * quantity,
+			stone: Number(incomming.querySelector(".icon.header.stone")?.parentElement.innerText.replaceAll(".", "")?.replaceAll(",", "") ?? 0) * quantity,
+			iron: Number(incomming.querySelector(".icon.header.iron")?.parentElement.innerText.replaceAll(".", "")?.replaceAll(",", "") ?? 0) * quantity
+		};
 
-		const simulatedResources = sumResources(getCertainResources(), outResources);
+		let simulatedResources = sumResources(getTheoreticalResources(), outResources);
+		simulatedResources = subtractResources(simulatedResources, inResources);
+
 		const newResourcesInfo = compareResources(simulatedResources);
 
 		const newDifference = newResourcesInfo.mostResource.quantity - newResourcesInfo.leastResource.quantity;
@@ -120,7 +126,15 @@ function sumResources(a, b) {
 		wood: Number(a.wood) + Number(b.wood),
 		stone: Number(a.stone) + Number(b.stone),
 		iron: Number(a.iron) + Number(b.iron)
-	}
+	};
+}
+
+function subtractResources(a, b) {
+	return {
+		wood: Number(a.wood) - Number(b.wood),
+		stone: Number(a.stone) - Number(b.stone),
+		iron: Number(a.iron) - Number(b.iron)
+	};
 }
 
 function getPendingOngoingResources() {
