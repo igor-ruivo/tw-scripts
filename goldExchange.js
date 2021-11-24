@@ -13,7 +13,12 @@
 
 //configs
 const offsetTimeInMillis = 3000;
-const refreshTimeInMinutes = 2;
+const refreshTimeInMinutes = 1;
+
+const villages = [
+    "405|439",
+    "403|439"
+];
 
 (function () {
 	'use strict';
@@ -27,11 +32,25 @@ const refreshTimeInMinutes = 2;
 	}, offsetTimeInMillis);
 
 	setTimeout(function () {
-		window.location.reload(true);
-	}, refreshTimeInMinutes * 60 * 1000 + offsetTimeInMillis);
+         const switchVillageButton = document.getElementById("village_switch_right");
+         if(switchVillageButton) {
+            switchVillageButton.click();
+         } else {
+            window.location.reload(true);
+         }
+    }, refreshTimeInMinutes * 60 * 1000 + offsetTimeInMillis);
 })();
 
+function getCurrentVillage() {
+   const villageName = document.getElementById("menu_row2").querySelector("b").innerText.split(" ")[0];
+   return villageName.slice(1, villageName.indexOf(")"));
+}
+
 function nextIteration() {
+    if(!villages.includes(getCurrentVillage())) {
+        document.getElementById("village_switch_right")?.click();
+        return;
+    }
 	const maximumTransport = Number(document.getElementById("market_merchant_max_transport").innerText.replaceAll(".", "").replaceAll(",", ""));
 	if(maximumTransport === 0) {
 		console.log("Sem mercadores disponíveis.");
@@ -57,10 +76,10 @@ function nextIteration() {
 		return b[1] - a[1];
 	});
 	const finalIndex = capacities.filter(r => !inputs[r[0]].disabled)[0][0];
-	
+
 	const finalInput = inputs[finalIndex];
 	finalInput.value = Math.min(resources[finalIndex][1], maximumTransport === 1000 ? 1 : maximumTransport < capacities[0][1] ? Math.round(maximumTransport / 2 / 1000) * 1000 : capacities[0][1]);
-	
+
 	setTimeout(function () {
 		document.getElementsByClassName("btn-premium-exchange-buy")[0].click();
 	}, 2 * offsetTimeInMillis);
