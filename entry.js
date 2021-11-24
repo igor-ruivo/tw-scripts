@@ -3,6 +3,7 @@
 // @description 	      Automatically redirects to previous botting instance.
 // @author		         Igor Ruivo
 // @include             http*://*screen=overview_villages&intro
+// @include             http*://*screen=welcome*
 // @version     	      0.0.1
 // @supportURL          https://github.com/igor-ruivo/tw-scripts
 // @grant               GM_getResourceText
