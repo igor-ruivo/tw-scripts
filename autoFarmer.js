@@ -26,8 +26,18 @@ const farmVillages = [
    },
    {
       coordinates: "403|439",
-      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0 },
-      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0 }
+      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0 },
+      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 }
+   },
+   {
+      coordinates: "409|441",
+      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0 },
+      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 }
+   },
+   {
+      coordinates: "402|439",
+      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0 },
+      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 }
    }
 ];
 
@@ -139,8 +149,8 @@ function updateABForCurrentVillage(currentModel, userModel) {
    let mustClickSaveButton = false;
    for (let i = 0; i < Object.values(userModel).length; i++) {
       const userPref = Object.values(userModel)[i];
-      if (userPref !== Number(currentModel[i + 1].value)) {
-         currentModel[i + 1].value = userPref;
+      if (userPref !== Number(currentModel[i].value)) {
+         currentModel[i].value = userPref;
          mustClickSaveButton = true;
       }
    }
@@ -152,9 +162,9 @@ function updateABForCurrentVillage(currentModel, userModel) {
 
 function setup() {
    const currentVillageSettings = farmVillages.filter(v => v.coordinates === getCurrentVillage())[0];
-   const arrangements = document.querySelectorAll("form>table");
-   const currentA = arrangements[0].querySelectorAll("input");
-   const currentB = arrangements[1].querySelectorAll("input");
+   const arrangements = document.querySelectorAll("form>table")[0];
+   const currentA = arrangements.querySelectorAll("tr")[1].querySelectorAll("input:not([type=hidden])");
+   const currentB = arrangements.querySelectorAll("tr")[3].querySelectorAll("input:not([type=hidden])");
 
    setTimeout(function () {
       const attacked_checkbox = document.getElementById("attacked_checkbox");
