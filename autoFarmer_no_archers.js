@@ -20,24 +20,9 @@ const maxMinutesBetweenAttacks = 75;
 
 const farmVillages = [
    {
-      coordinates: "405|439",
-      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0 },
-      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 }
-   },
-   {
-      coordinates: "403|439",
-      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0 },
-      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 }
-   },
-   {
-      coordinates: "409|441",
-      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0 },
-      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 }
-   },
-   {
-      coordinates: "402|439",
-      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0 },
-      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 }
+      coordinates: "528|595",
+      A: { spear: 0, sword: 0, axe: 0, spy: 0, light: 2, heavy: 0, knight: 0 },
+      B: { spear: 0, sword: 0, axe: 0, spy: 0, light: 1, heavy: 0, knight: 0 }
    }
 ];
 
@@ -45,10 +30,8 @@ const troopsSpeed = {
    spear: 18 * 60,
    sword: 22 * 60,
    axe: 18 * 60,
-   archer: 18 * 60,
    spy: 9 * 60,
    light: 10 * 60,
-   marcher: 10 * 60,
    heavy: 11 * 60,
    knight: 10 * 60
 }
