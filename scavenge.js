@@ -20,7 +20,6 @@ const villages = [
 
 const serverHasArchers = document.querySelectorAll('[data-unit="archer"]').length > 0;
 
-// remember to delete the archer and marcher entries if the server doesn't have them!
 const scavengeWith = [
    true, //spear
    true, //sword
@@ -263,6 +262,11 @@ function allocate(maxScore) {
 }
 
 function nextIteration() {
+   if(!serverHasArchers) {
+      scavengeWith.splice(3, 1);
+      scavengeWith.splice(5, 1);
+   }
+
    if(!villages.includes(getCurrentVillage())) {
       setTimeout(function () {
          const switchVillageButton = document.getElementById("village_switch_right");
