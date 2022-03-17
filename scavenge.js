@@ -18,6 +18,9 @@ const villages = [
    "403|439"
 ];
 
+const serverHasArchers = document.querySelectorAll('[data-unit="archer"]').length > 0;
+
+// remember to delete the archer and marcher entries if the server doesn't have them!
 const scavengeWith = [
    true, //spear
    true, //sword
@@ -29,7 +32,7 @@ const scavengeWith = [
    false //knight
 ]
 
-const troopsLoot = [
+const troopsLoot = serverHasArchers ? [
    25,
    15,
    10,
@@ -38,9 +41,16 @@ const troopsLoot = [
    50,
    50,
    100
+] : [
+   25,
+   15,
+   10,
+   80,
+   50,
+   100
 ];
 
-const troopsAllocationOrder = [
+const troopsAllocationOrder = serverHasArchers ? [
    7,
    4,
    5,
@@ -49,15 +59,29 @@ const troopsAllocationOrder = [
    1,
    2,
    3
+] : [
+   5,
+   3,
+   4,
+   0,
+   1,
+   2
 ];
 
-const troopsPopulation = [
+const troopsPopulation = serverHasArchers ? [
    1,
    1,
    1,
    1,
    4,
    5,
+   6,
+   10
+] : [
+   1,
+   1,
+   1,
+   4,
    6,
    10
 ];
@@ -208,7 +232,7 @@ function allocate(maxScore) {
    };
    for(let nOption = 0; nOption < nOptions; nOption++) {
       console.log("opção " + nOption + ":");
-      const allocation = [0, 0, 0, 0, 0, 0, 0, 0];
+      const allocation = serverHasArchers ? [0, 0, 0, 0, 0, 0, 0, 0] : [0, 0, 0, 0, 0, 0] ;
       let allocationsEstimate = maxScore.allocations[nOption] * totalHaul;
       let populationSum = 0;
       for(let i = 0; i < troopsAllocationOrder.length; i++) {

@@ -18,6 +18,7 @@ const waitTimePerPageOrVillageChange = 5000;
 // set maxMinutesBetweenAttacks = Infinity if you don't want to use this feature
 const maxMinutesBetweenAttacks = 75;
 
+// remember to delete the archer and marcher entries if the server doesn't have them!
 const farmVillages = [
    {
       coordinates: "405|439",
@@ -41,7 +42,9 @@ const farmVillages = [
    }
 ];
 
-const troopsSpeed = {
+const serverHasArchers = document.querySelectorAll('[data-unit="archer"]').length > 0;
+
+const troopsSpeed = serverHasArchers ? {
    spear: 18 * 60,
    sword: 22 * 60,
    axe: 18 * 60,
@@ -51,7 +54,16 @@ const troopsSpeed = {
    marcher: 10 * 60,
    heavy: 11 * 60,
    knight: 10 * 60
-}
+} :
+{
+   spear: 18 * 60,
+   sword: 22 * 60,
+   axe: 18 * 60,
+   spy: 9 * 60,
+   light: 10 * 60,
+   heavy: 11 * 60,
+   knight: 10 * 60
+};
 
 let stopIteration = false;
 const nPages = Number(document.getElementsByClassName("paged-nav-item").length / 2);
