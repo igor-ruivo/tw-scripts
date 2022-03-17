@@ -18,7 +18,6 @@ const waitTimePerPageOrVillageChange = 5000;
 // set maxMinutesBetweenAttacks = Infinity if you don't want to use this feature
 const maxMinutesBetweenAttacks = 75;
 
-// remember to delete the archer and marcher entries if the server doesn't have them!
 const farmVillages = [
    {
       coordinates: "405|439",
@@ -78,6 +77,16 @@ const currentPageIndex = nPages !== 0 ? Number(document.querySelector("strong").
       }
       document.getElementById("checkbox")?.click();
    }, 2 * 1000);
+
+   if(!serverHasArchers) {
+      farmVillages.forEach(f => {
+         delete f.A["archer"];
+         delete f.A["marcher"];
+         delete f.B["archer"];
+         delete f.B["marcher"];
+      });
+   }
+
    const status = checkForCorruptedFarmVillages();
    switch (status) {
       case 1:
@@ -170,7 +179,6 @@ function updateABForCurrentVillage(currentModel, userModel) {
       document.querySelectorAll("form>table")[0].querySelectorAll("td")[1].querySelector("input").click();
    }
 }
-
 
 function setup() {
    const currentVillageSettings = farmVillages.filter(v => v.coordinates === getCurrentVillage())[0];
