@@ -75,10 +75,18 @@ function nextIteration() {
 	capacities.sort(function(a, b) {
 		return b[1] - a[1];
 	});
-	const finalIndex = capacities.filter(r => !inputs[r[0]].disabled)[0][0];
+
+	const possibleSolutions = capacities.filter(r => !inputs[r[0]].disabled && resources[r[0]][1] >= 2000);
+
+	if(possibleSolutions.length === 0) {
+		console.log("Não tens recursos suficientes.");
+		return;
+	}
+
+	const finalIndex = possibleSolutions[0][0];
 
 	const finalInput = inputs[finalIndex];
-	finalInput.value = Math.min(resources[finalIndex][1], maximumTransport === 1000 ? 1 : maximumTransport < capacities[0][1] ? Math.round(maximumTransport / 2 / 1000) * 1000 : capacities[0][1]);
+	finalInput.value = Math.min(Math.round(resources[finalIndex][1] / 2 / 1000) * 1000, maximumTransport === 1000 ? 1 : maximumTransport < capacities[0][1] ? Math.round(maximumTransport / 2 / 1000) * 1000 : capacities[0][1]);
 
 	setTimeout(function () {
 		document.getElementsByClassName("btn-premium-exchange-buy")[0].click();
