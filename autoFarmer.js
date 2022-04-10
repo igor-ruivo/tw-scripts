@@ -385,7 +385,7 @@ function nextIteration() {
       if (!hasEnoughTroops(troops, troopsSetting)) {
          outOfTroops = true;
          console.log("Não tens tropas suficientes.");
-         if (!hasEnoughTroops(troops, Object.values(currentVillageSettings.B))) {
+         if (!hasEnoughTroops(troops, Object.values(partialLoot ? currentVillageSettings.A : currentVillageSettings.B))) {
             break;
          }
          continue;
