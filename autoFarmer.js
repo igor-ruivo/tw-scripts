@@ -2,7 +2,7 @@
 // @name                Tribal Wars Auto Farmer Bot
 // @description 	      Automatically farms barbarian villages whenever possible. Requires Farm Assistant. Model A should have more troops than Model B.
 // @author		         Igor Ruivo
-// @include             http*://*screen=am_farm*
+// @include             http*tribalwars*screen=am_farm*
 // @version     	      0.0.1
 // @supportURL          https://github.com/igor-ruivo/tw-scripts
 // @grant               GM_getResourceText
@@ -41,28 +41,7 @@ const farmVillages = [
    }
 ];
 
-const serverHasArchers = document.querySelectorAll('[data-unit="archer"]').length > 0;
-
-const troopsSpeed = serverHasArchers ? {
-   spear: 18 * 60,
-   sword: 22 * 60,
-   axe: 18 * 60,
-   archer: 18 * 60,
-   spy: 9 * 60,
-   light: 10 * 60,
-   marcher: 10 * 60,
-   heavy: 11 * 60,
-   knight: 10 * 60
-} :
-{
-   spear: 18 * 60,
-   sword: 22 * 60,
-   axe: 18 * 60,
-   spy: 9 * 60,
-   light: 10 * 60,
-   heavy: 11 * 60,
-   knight: 10 * 60
-};
+let serverHasArchers = false;
 
 let stopIteration = false;
 const nPages = Number(document.getElementsByClassName("paged-nav-item").length / 2);
@@ -78,6 +57,8 @@ const currentPageIndex = nPages !== 0 ? Number(document.querySelector("strong").
       document.getElementById("checkbox")?.click();
    }, 2 * 1000);
 
+   serverHasArchers = document.querySelectorAll('[data-unit="archer"]').length > 0;
+   
    if(!serverHasArchers) {
       farmVillages.forEach(f => {
          delete f.A["archer"];
@@ -289,6 +270,26 @@ function indexCoords(coords) {
 }
 
 function getSlowestTroopTime(userSetting) {
+   const troopsSpeed = serverHasArchers ? {
+      spear: 18 * 60,
+      sword: 22 * 60,
+      axe: 18 * 60,
+      archer: 18 * 60,
+      spy: 9 * 60,
+      light: 10 * 60,
+      marcher: 10 * 60,
+      heavy: 11 * 60,
+      knight: 10 * 60
+   } :
+   {
+      spear: 18 * 60,
+      sword: 22 * 60,
+      axe: 18 * 60,
+      spy: 9 * 60,
+      light: 10 * 60,
+      heavy: 11 * 60,
+      knight: 10 * 60
+   };
    let slowestTime = 0;
    for (let i = 0; i < userSetting.length; i++) {
       if (userSetting[i] > 0) {

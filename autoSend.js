@@ -2,7 +2,7 @@
 // @name                Tribal Wars Auto Village Trading Bot
 // @description 	    Automatically sends resources to your own villages in need.
 // @author		        Igor Ruivo
-// @include             http*://*.*game.php*mode=send*
+// @include             http*tribalwars*mode=send*
 // @version     	    0.0.1
 // @supportURL          https://github.com/igor-ruivo/tw-scripts
 // @grant               GM_getResourceText

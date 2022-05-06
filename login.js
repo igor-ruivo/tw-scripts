@@ -2,7 +2,7 @@
 // @name                Tribal Wars Auto Login
 // @description 	      Automatically logins in the first recent world displayed
 // @author		         Igor Ruivo
-// @include             http*://www.tribalwars*
+// @include             http*tribalwars*
 // @version     	      0.0.1
 // @supportURL          https://github.com/igor-ruivo/tw-scripts
 // @grant               GM_getResourceText

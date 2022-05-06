@@ -2,7 +2,7 @@
 // @name                Tribal Wars Walls Destroyer Bot
 // @description 	      Automatically sends attacks with rams and viks to barbarian villages previously marked as containing walls. Requires previous usage of autoFarmer.js. This script should be used only once whenever a considerable number of reports are obtained with yellow or red marker. 
 // @author		         Igor Ruivo
-// @include             http*://*screen=place*
+// @include             http*tribalwars*screen=place*
 // @version     	      0.0.1
 // @supportURL          https://github.com/igor-ruivo/tw-scripts
 // @grant               GM_getResourceText

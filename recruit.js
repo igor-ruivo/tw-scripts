@@ -2,9 +2,9 @@
 // @name                Tribal Wars Troops Recruiter Bot
 // @description 	    Automatically recruits the desired troops as soon as possible.
 // @author		        Igor Ruivo
-// @include             http*://*.*game.php*screen=stable*
-// @include             http*://*.*game.php*screen=barracks*
-// @include             http*://*.*game.php*screen=garage*
+// @include             http*tribalwars*screen=stable*
+// @include             http*tribalwars*screen=barracks*
+// @include             http*tribalwars*screen=garage*
 // @version     	    0.0.1
 // @supportURL          https://github.com/igor-ruivo/tw-scripts
 // @grant               GM_getResourceText

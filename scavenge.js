@@ -2,7 +2,7 @@
 // @name                Tribal Wars Auto Scavenge Bot
 // @description 	      Automatically uses scavenge.
 // @author		         Igor Ruivo
-// @include             http*://*screen=place*mode=scavenge*
+// @include             http*tribalwars*screen=place*mode=scavenge*
 // @version     	      0.0.1
 // @supportURL          https://github.com/igor-ruivo/tw-scripts
 // @grant               GM_getResourceText
@@ -18,8 +18,6 @@ const villages = [
    "403|439"
 ];
 
-const serverHasArchers = document.querySelectorAll('[data-unit="archer"]').length > 0;
-
 const scavengeWith = [
    true, //spear
    true, //sword
@@ -29,61 +27,12 @@ const scavengeWith = [
    true, //marcher
    true, //heavy
    false //knight
-]
-
-const troopsLoot = serverHasArchers ? [
-   25,
-   15,
-   10,
-   10,
-   80,
-   50,
-   50,
-   100
-] : [
-   25,
-   15,
-   10,
-   80,
-   50,
-   100
 ];
 
-const troopsAllocationOrder = serverHasArchers ? [
-   7,
-   4,
-   5,
-   6,
-   0,
-   1,
-   2,
-   3
-] : [
-   5,
-   3,
-   4,
-   0,
-   1,
-   2
-];
-
-const troopsPopulation = serverHasArchers ? [
-   1,
-   1,
-   1,
-   1,
-   4,
-   5,
-   6,
-   10
-] : [
-   1,
-   1,
-   1,
-   4,
-   6,
-   10
-];
+let serverHasArchers = false;
+let troopsLoot = [];
+let troopsAllocationOrder = [];
+let troopsPopulation = [];
 
 const memory = new Map();
 let nOptions;
@@ -262,6 +211,62 @@ function allocate(maxScore) {
 }
 
 function nextIteration() {
+   serverHasArchers = document.querySelectorAll('[data-unit="archer"]').length > 0;
+   
+   troopsLoot = serverHasArchers ? [
+      25,
+      15,
+      10,
+      10,
+      80,
+      50,
+      50,
+      100
+   ] : [
+      25,
+      15,
+      10,
+      80,
+      50,
+      100
+   ];
+
+   troopsAllocationOrder = serverHasArchers ? [
+      7,
+      4,
+      5,
+      6,
+      0,
+      1,
+      2,
+      3
+   ] : [
+      5,
+      3,
+      4,
+      0,
+      1,
+      2
+   ];
+
+   troopsPopulation = serverHasArchers ? [
+      1,
+      1,
+      1,
+      1,
+      4,
+      5,
+      6,
+      10
+   ] : [
+      1,
+      1,
+      1,
+      4,
+      6,
+      10
+   ];
+
    if(!serverHasArchers) {
       scavengeWith.splice(3, 1);
       scavengeWith.splice(5, 1);

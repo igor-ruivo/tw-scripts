@@ -2,7 +2,7 @@
 // @name                Tribal Wars Auto Gold Exchange Bot
 // @description 	    Automatically tries to exchange available resources for gold whenever there are merchants available.
 // @author		        Igor Ruivo
-// @include             http*://*.*game.php*mode=exchange*
+// @include             http*tribalwars*mode=exchange*
 // @version     	    0.0.1
 // @supportURL          https://github.com/igor-ruivo/tw-scripts
 // @grant               GM_getResourceText

@@ -2,7 +2,7 @@
 // @name                Tribal Wars Auto Conquer Bot
 // @description 	    Automatically sends nobles
 // @author		        Igor Ruivo
-// @include             http*://*screen=place*
+// @include             http*tribalwars*screen=place*
 // @version     	    0.0.1
 // @supportURL          https://github.com/igor-ruivo/tw-scripts
 // @grant               GM_getResourceText

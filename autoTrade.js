@@ -2,7 +2,7 @@
 // @name                Tribal Wars Auto Trader Bot
 // @description 	    Automatically creates offers in the market in order to balance your resources.
 // @author		        Igor Ruivo
-// @include             http*://*.*game.php*mode=own_offer*
+// @include             http*tribalwars*mode=own_offer*
 // @version     	    0.0.1
 // @supportURL          https://github.com/igor-ruivo/tw-scripts
 // @grant               GM_getResourceText
