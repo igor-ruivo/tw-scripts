@@ -2,7 +2,7 @@
 // @name                Tribal Wars Builder Bot
 // @description 	    Automatically updates the desired buildings as soon as possible. Comes with automatic storage and farm update when needed.
 // @author		        Igor Ruivo
-// @include             http*tribalwars*screen=main
+// @include             http*tribalwars*screen=main*
 // @version     	    0.0.1
 // @supportURL          https://github.com/igor-ruivo/tw-scripts
 // @grant               GM_getResourceText

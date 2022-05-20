@@ -14,12 +14,23 @@
 // ==/UserScript==
 
 //configs
-const avoidUnevenResources = false;
 const troopsToTrain = [
-	{troop: "sword", train: 5, max: 10000},
-	{troop: "heavy", train: 2, max: 1000}
+	{village: "444|581", troop: "axe", train: 6, max: 7000},
+	{village: "444|581", troop: "light", train: 3, max: 3000},
+	{village: "444|581", troop: "ram", train: 1, max: 300},
+	{village: "441|576", troop: "axe", train: 6, max: 7000},
+	{village: "441|576", troop: "light", train: 3, max: 3000},
+	{village: "447|581", troop: "spear", train: 2, max: 7000},
+	{village: "447|581", troop: "sword", train: 2, max: 3000},
+	{village: "447|581", troop: "archer", train: 1, max: 2000},
+	{village: "441|577", troop: "spear", train: 2, max: 7000},
+	{village: "441|577", troop: "sword", train: 2, max: 3000},
+	{village: "441|577", troop: "archer", train: 1, max: 2000},
+	{village: "447|580", troop: "axe", train: 5, max: 7000},
+	{village: "447|580", troop: "light", train: 3, max: 3000}
 ];
-const recruitmentCicleTimeInMinutes = 30;
+const avoidUnevenResources = false;
+const recruitmentCicleTimeInMinutes = 11;
 const timeoutBetweenDifferentTroopsTrainInSameBuilding = 2000;
 const offsetTimeInMillis = 3000;
 
@@ -36,7 +47,7 @@ const troopsPerBuildings = {
 		document.getElementById("checkbox")?.click();
 	}, 2 * 1000);
 	const currentBuilding = getCurrentBuilding();
-	const troopsAsArray = troopsToTrain.map(t => t.troop);
+	const troopsAsArray = troopsToTrain.filter(t => t.village === getCurrentVillage()).map(t => t.troop);
 
 	let relevantBuildings = [];
 
@@ -127,10 +138,15 @@ function getNumberOfTroops(troop) {
 	return Number(document.getElementById(troop + "_0_cost_wood").closest("tr").children[2].innerText.split("/")[1]);
 }
 
+function getCurrentVillage() {
+	const villageName = document.getElementById("menu_row2").querySelector("b").innerText.split(" ")[0];
+	return villageName.slice(1, villageName.indexOf(")"));
+}
+
 function nextIteration() {
-	for(let i = 0; i < troopsToTrain.length; i++) {
+	for(let i = 0; i < troopsToTrain.filter(t => t.village === getCurrentVillage()).length; i++) {
 		setTimeout(function () {
-			const troopInfo = troopsToTrain[i];
+			const troopInfo = troopsToTrain.filter(t => t.village === getCurrentVillage())[i];
 			console.log("A analisar " + troopInfo.troop + "...");
 			const availableUnits = document.getElementById(troopInfo.troop + "_0_a")?.innerText?.slice(1, -1);
 			if(!availableUnits) {
