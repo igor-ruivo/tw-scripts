@@ -100,8 +100,8 @@ function thirdDegreeIteration() {
       allocations: [0, 0, 0, 0]
    };
 
-   const iterations = 1000;
-   const threshold = 990;
+   const iterations = 500;
+   const threshold = 495;
    for(let i = 0; i <= iterations; i++) {
       for(let j = 0; j <= iterations; j++) {
          if(i + j > iterations) {
