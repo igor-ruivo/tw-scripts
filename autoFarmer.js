@@ -15,33 +15,16 @@ const baseTimeInMillisBetweenFarms = 1500;
 const setupIntervalTimerInMillis = 500;
 const waitTimePerPageOrVillageChange = 5000;
 
-// set maxMinutesBetweenAttacks = Infinity if you don't want to use this feature
-const maxMinutesBetweenAttacks = 75;
+const maxMinutesBetweenAttacks = 10;
+const alwaysTrySendAttackWhenNotAlreadyAttacking = false;
 
 const farmVillages = [
    {
-      coordinates: "405|439",
-      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0 },
-      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 }
-   },
-   {
-      coordinates: "403|439",
-      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0 },
-      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 }
-   },
-   {
-      coordinates: "409|441",
-      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0 },
-      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 }
-   },
-   {
-      coordinates: "402|439",
-      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 3, marcher: 0, heavy: 0, knight: 0 },
-      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 2, marcher: 0, heavy: 0, knight: 0 }
+      coordinates: "600|473",
+      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0 },
+      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0 }
    }
 ];
-
-let serverHasArchers = false;
 
 let stopIteration = false;
 const nPages = Number(document.getElementsByClassName("paged-nav-item").length / 2);
@@ -57,16 +40,15 @@ const currentPageIndex = nPages !== 0 ? Number(document.querySelector("strong").
       document.getElementById("checkbox")?.click();
    }, 2 * 1000);
 
-   serverHasArchers = document.querySelectorAll('[data-unit="archer"]').length > 0;
-   
-   if(!serverHasArchers) {
-      farmVillages.forEach(f => {
-         delete f.A["archer"];
-         delete f.A["marcher"];
-         delete f.B["archer"];
-         delete f.B["marcher"];
-      });
-   }
+   Object.keys(farmVillages[0].A).forEach(e => {
+      const serverHasTroop = document.querySelectorAll('[data-unit="' + e + '"]').length > 0;
+      if(!serverHasTroop) {
+         farmVillages.forEach(f => {
+            delete f.A[e];
+            delete f.B[e];
+         });
+      }
+   });
 
    const status = checkForCorruptedFarmVillages();
    switch (status) {
@@ -237,7 +219,7 @@ function farm(index, button, coords, distance, currentVillage, randomComponent, 
          const newArray = [];
          for (let i = 0; i < onGoingAttacksArray.length; i++) {
             const e = onGoingAttacksArray[i];
-            if (e.arrivalTime > dateNow && (e.sendTime ?? Infinity) + maxMinutesBetweenAttacks * 60 * 1000 > dateNow) {
+            if ((e.sendTime ?? Infinity) + maxMinutesBetweenAttacks * 60 * 1000 > dateNow && (!alwaysTrySendAttackWhenNotAlreadyAttacking || e.arrivalTime > dateNow)) {
                if (e.sender === currentVillage) {
                   sendAttack = false;
                }
@@ -259,8 +241,6 @@ function farm(index, button, coords, distance, currentVillage, randomComponent, 
          }];
          localStorage[indexCoords(coords)] = JSON.stringify(memory ? JSON.parse(memory).concat(newEntry) : newEntry);
          button.click();
-      } else {
-         console.log("Já estás a atacar esta aldeia");
       }
    }, delay);
 }
@@ -270,26 +250,25 @@ function indexCoords(coords) {
 }
 
 function getSlowestTroopTime(userSetting) {
-   const troopsSpeed = serverHasArchers ? {
-      spear: 18 * 60,
-      sword: 22 * 60,
-      axe: 18 * 60,
-      archer: 18 * 60,
-      spy: 9 * 60,
-      light: 10 * 60,
-      marcher: 10 * 60,
-      heavy: 11 * 60,
-      knight: 10 * 60
-   } :
-   {
-      spear: 18 * 60,
-      sword: 22 * 60,
-      axe: 18 * 60,
-      spy: 9 * 60,
-      light: 10 * 60,
-      heavy: 11 * 60,
-      knight: 10 * 60
+   const troopsSpeed = {
+      spear: 18 * 60 / 5,
+      sword: 22 * 60 / 5,
+      axe: 18 * 60 / 5,
+      archer: 18 * 60 / 5,
+      spy: 9 * 60 / 5,
+      light: 10 * 60 / 5,
+      marcher: 10 * 60 / 5,
+      heavy: 11 * 60 / 5,
+      knight: 10 * 60 / 5
    };
+
+   Object.keys(farmVillages[0].A).forEach(e => {
+      const serverHasTroop = document.querySelectorAll('[data-unit="' + e + '"]').length > 0;
+      if(!serverHasTroop) {
+         delete troopsSpeed[e];
+      }
+   });
+
    let slowestTime = 0;
    for (let i = 0; i < userSetting.length; i++) {
       if (userSetting[i] > 0) {
@@ -375,7 +354,7 @@ function nextIteration() {
       if (memory) {
          const computedDate = Date.parse(new Date()) + baseTimeInMillisBetweenFarms * farmsScheduled + randomComponent;
          if (JSON.parse(memory).some(e =>
-            e.sender === currentVillage && e.arrivalTime > computedDate && (e.sendTime ?? Infinity) + maxMinutesBetweenAttacks * 60 * 1000 > computedDate
+            e.sender === currentVillage && (!alwaysTrySendAttackWhenNotAlreadyAttacking || e.arrivalTime > computedDate) && (e.sendTime ?? Infinity) + maxMinutesBetweenAttacks * 60 * 1000 > computedDate
          )) {
             continue;
          }
