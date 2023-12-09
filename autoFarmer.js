@@ -85,7 +85,7 @@ const currentPageIndex = nPages !== 0 ? Number(document.querySelector("strong").
       return;
    }
 
-   if (document.getElementById("farm_pagesize").value !== "100") {
+   if (document.getElementById("farm_pagesize") && document.getElementById("farm_pagesize").value !== "100") {
       document.getElementById("farm_pagesize").value = "100";
       document.getElementsByClassName("btn")[1].click();
       return;
