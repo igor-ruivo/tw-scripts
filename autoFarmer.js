@@ -262,7 +262,7 @@ function getSlowestTroopTime(userSetting) {
       knight: 10 * 60 / 5
    };
 
-   Object.keys(farmVillages[0].A).forEach(e => {
+   Object.keys(troopsSpeed).forEach(e => {
       const serverHasTroop = document.querySelectorAll('[data-unit="' + e + '"]').length > 0;
       if(!serverHasTroop) {
          delete troopsSpeed[e];
@@ -321,7 +321,7 @@ function nextIteration() {
       const coords = coordsColumn.innerText.substring(1, coordsColumn.innerText.indexOf(")"));
       const statusColumn = columns[1];
       const srcAttr = statusColumn.children[0].getAttribute("src");
-      const isGreenBall = srcAttr?.endsWith("green.png") || srcAttr?.endsWith("blue.png");
+      const isGreenBall = srcAttr?.includes("green") || srcAttr?.includes("blue");
       const distance = Number(columns[7].innerText);
       if(!isGreenBall) {
          const wallMemory = localStorage["$w$" + coords + "$w$"];
@@ -359,7 +359,7 @@ function nextIteration() {
             continue;
          }
       }
-      const partialLoot = icon?.getAttribute("src")?.endsWith("max_loot/0.png");
+      const partialLoot = icon?.getAttribute("src")?.includes("max_loot");
       const adequateSetting = partialLoot ? currentVillageSettings.B : currentVillageSettings.A;
       const troopsSetting = Object.values(adequateSetting);
       if (!hasEnoughTroops(troops, troopsSetting)) {
