@@ -14,22 +14,72 @@
 //configs
 const helpingSystem = [
 	{
-		sender: "405|439",
-		saveStoragePercentage: 0,
-		receivers: [
-			{
-				village: "403|439",
-				fillStoragePercentage: 50,
-				minimumToSend: 1000
-			}
-		]
-	}
+        sender: "585|486",
+        saveStoragePercentage: 10,
+        receivers: [
+            {
+                village: "582|486",
+                fillStoragePercentage: 35,
+                minimumToSend: 1000
+            },
+            {
+                village: "586|487",
+                fillStoragePercentage: 35,
+                minimumToSend: 1000
+            },
+            {
+                village: "585|487",
+                fillStoragePercentage: 35,
+                minimumToSend: 1000
+            }
+        ]
+    }
 ];
 
 const singleTradeForEachVillageAtTime = false;
 const merchantCapacity = 1000;
 const offsetTimeInMillis = 3000;
 let resourcesPeekDate;
+
+const fetchAllVillagesResources = async () => {
+	const url = game_data.link_base_pure+"overview_villages&mode=prod";
+	const result = await fetch(url);
+	const pageTxt = await result.text();
+
+	const parser = new DOMParser();
+    const htmlDoc = parser.parseFromString(pageTxt, 'text/html');
+
+	const entries = Array.from(htmlDoc.getElementById('production_table').getElementsByTagName('tr')).slice(1);
+
+	const map = new Map();
+
+	entries.forEach(e => {
+		const childArray = Array.from(e.children);
+		const link = childArray[1].getElementsByClassName('quickedit-label')[0].innerText.trim();
+		const lastIndexOfParenthesis = link.lastIndexOf(')');
+		const firstPart = link.substring(0, lastIndexOfParenthesis);
+		const lastIndexOfOtherParenthesis = firstPart.lastIndexOf('(');
+		const coords = firstPart.substring(lastIndexOfOtherParenthesis + 1);
+
+		const wood = e.getElementsByClassName('res wood')[0].innerText.replaceAll('.','');
+		const stone = e.getElementsByClassName('res stone')[0].innerText.replaceAll('.','');
+		const iron = e.getElementsByClassName('res iron')[0].innerText.replaceAll('.','');
+
+		const storage = childArray[4].innerText;
+
+		const rec = {
+			storage: storage,
+			wood: wood,
+			stone: stone,
+			iron: iron
+		};
+
+		map.set(coords, rec);
+	});
+
+	return map;
+}
+
 
 (function () {
 	'use strict';
@@ -210,11 +260,13 @@ function getAvailableResources() {
 	};
 }
 
-function getHelpedVillageResources(helpedVillage, coords) {
+async function getHelpedVillageResources(coords) {
+	const res = await fetchAllVillagesResources();
 	const baseResources = {
-		wood: Number(helpedVillage.querySelector(".wood").nextElementSibling.innerText.replace(".", "")),
-		stone: Number(helpedVillage.querySelector(".stone").nextElementSibling.innerText.replace(".", "")),
-		iron: Number(helpedVillage.querySelector(".iron").nextElementSibling.innerText.replace(".", "")),
+		wood: Number(res.get(coords).wood),
+		stone: Number(res.get(coords).stone),
+		iron: Number(res.get(coords).iron),
+		storage: Number(res.get(coords).storage)
 	}
 	const incommings = localStorage["$$" + coords + "$$"];
 	if(!!incommings) {
@@ -235,7 +287,7 @@ function villageIsAlreadySupplying(coords) {
 	return JSON.parse(memory).some(m => m.sender === getCurrentVillage() && m.date + m.tripTime > Date.parse(new Date()));
 }
 
-function nextIteration() {
+async function nextIteration() {
 	const storageSpace = Number(document.getElementById("storage").innerText);
 	const availableMerchants = Number(document.getElementById("market_merchant_available_count").innerText);
 	if(availableMerchants === 0) {
@@ -256,7 +308,7 @@ function nextIteration() {
 	const villagesToBeHelped = [];
 
 	villages.forEach(v => {
-		const coords = v.querySelectorAll("td")[3].innerText;
+		const coords = v.querySelectorAll("td")[1].innerText;
 		if(villageIsSupplier() && villageIsSupplierOfSpecificVillage(coords)) {
 			if(singleTradeForEachVillageAtTime && villageIsAlreadySupplying(coords)) {
 				console.log("A aldeia já está a enviar recursos para " + coords);
@@ -272,20 +324,20 @@ function nextIteration() {
 
 	for(let i = 0; i < villagesToBeHelped.length; i++) {
 		const currentVillage = villagesToBeHelped[i];
-		const coordinates = currentVillage.children[3].innerText;
+		const coordinates = currentVillage.children[1].innerText;
 
 		console.log("A analisar possível fornecimento para " + coordinates);
 
-		const helpedVillageResources = getHelpedVillageResources(currentVillage, coordinates);
+		const helpedVillageResources = await getHelpedVillageResources(coordinates);
 		console.log("Recursos na aldeia (somando os que já vão a caminho):");
 		console.log(helpedVillageResources);
-		const helpedVillageStorage = Number(currentVillage.querySelector(".ressources").parentElement.innerText.replace(".", ""));
+		const helpedVillageStorage = Number(helpedVillageResources.storage);
 		const resourcesInput = document.getElementsByClassName("resources_max");
 		const maxResourcesToSend = merchantCapacity * availableMerchants;
 		const receiverVillageData = receiverVillages.filter(v => v.village === coordinates)[0];
 		const maxResourcesToReceive = Math.floor(receiverVillageData.fillStoragePercentage / 100 * helpedVillageStorage);
 		const minimumResourcesToSend = receiverVillageData.minimumToSend;
-		console.log("Màximo de armazém a encher: " + maxResourcesToReceive);
+		console.log("Máximo de armazém a encher: " + maxResourcesToReceive);
 		const helpedMissingResources = {
 			wood: Math.max(maxResourcesToReceive - helpedVillageResources.wood, 0),
 			stone: Math.max(maxResourcesToReceive - helpedVillageResources.stone, 0),
