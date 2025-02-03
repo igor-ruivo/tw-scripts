@@ -12,7 +12,7 @@
 // ==/UserScript==
 
 const recruit = async () => {
-    const MIN_INTERVAL = 20 * 60 * 1000;
+    const MIN_INTERVAL = 15 * 60 * 1000;
     const key = 'last_t1'
     const lastExecution = localStorage.getItem(key);
     const now = Date.now();
@@ -50,9 +50,27 @@ const recruit = async () => {
 }
 
 const farmOasis = async () => {
+    const keyBuilder = (coords) => `f${coords}f`;
     const farmTroopCount = 2;
-    const farmList = [[75, 38], [76, 38], [80, 37], [76, 41], [83, 37], [72, 35], [72, 40], [71, 41]];
-    const selectedFarm = farmList[Math.floor(Math.random() * farmList.length)];
+    const farmList = [[76,38],[75,38],[76,41],[80,37],[80,40],[76,42],[76,34],[75,42],[81,40],[77,43],[77,33],[76,43],[76,33],[72,40],[80,43],[72,35],[83,37],[76,32],[78,32],[75,32],[72,42],[82,42],[71,41],[76,31],[81,32],[80,45],[72,44],[72,32],[78,46],[81,31],[78,30],[69,36],[75,30],[73,46],[85,34],[77,47],[76,47],[68,39],[68,37],[75,29],[86,42],[87,38],[71,30],[76,48],[67,39],[87,37],[72,47],[87,41],[67,35],[69,31],[87,34],[71,47],[66,39],[88,37],[75,27],[88,35],[77,50],[78,50],[89,39],[72,49],[66,33],[75,50],[67,45],[65,41],[89,35],[83,49],[66,44],[71,27],[65,42],[89,34],[69,48],[85,48],[82,50],[64,38],[84,49],[66,45],[70,27],[75,51],[90,40],[64,36],[90,36],[65,44],[71,26],[81,51],[69,27],[73,25],[70,26],[64,33],[91,38],[67,48],[91,40],[87,28],[80,52],[91,35],[72,52],[82,24],[77,53],[68,26],[77,23],[75,23],[63,44],[63,32],[90,30],[69,25],[85,25],[92,41],[81,53],[92,42],[91,31],[70,24],[84,24],[68,51],[86,51],[68,25],[92,43],[91,46],[92,32],[89,27],[67,51],[87,51],[64,48],[90,48],[91,47],[68,24],[69,23],[90,27],[66,25],[91,28],[62,47],[68,23],[64,50],[91,27],[67,23],[90,25],[92,49],[92,27],[90,52],[63,51],[92,26],[65,23],[64,53],[64,23],[63,23]];
+    let selectedFarm = farmList[0];
+    const intervalFarmTime = 1000 * 60 * 60;
+
+    const dateNow = Date.now();
+
+    for (let i = 0; i < farmList.length; i++) {
+        const currCord = farmList[i];
+        const lastFarm = localStorage.getItem(keyBuilder(currCord));
+        if (!lastFarm || (dateNow - lastFarm) >= intervalFarmTime ) {
+            selectedFarm = currCord;
+            break;
+        }
+
+        if (i === farmList.length - 1) {
+            console.log('Nothing else to farm.');
+        }
+    }
+
     const url = `${window.location.origin}/build.php?gid=16&tt=2`;
 
     const formData = new URLSearchParams();
@@ -91,7 +109,6 @@ const farmOasis = async () => {
     
     const action = document.getElementById('troopSendForm').children[0].value;
     const villageId = action.split("/")[1];
-    console.log(villageId);
 
     const actionUrl = `${window.location.origin}/build.php?gid=16&tt=2`;
 
@@ -126,6 +143,8 @@ const farmOasis = async () => {
             'Accept': 'application/json'
         }
     });
+
+    localStorage.setItem(keyBuilder(selectedFarm), dateNow);
 }
 
 const balanceHeroProduction = async () => {
@@ -303,7 +322,7 @@ const upgradeStorageIfNeeded = async () => {
 
 upgradeResources();
 upgradeStorageIfNeeded();
-balanceHeroProduction();
+//balanceHeroProduction();
 farmOasis();
 recruit();
 
