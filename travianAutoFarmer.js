@@ -11,14 +11,16 @@
 // @grant               unsafeWindow
 // ==/UserScript==
 
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 const recruit = async () => {
-    const MIN_INTERVAL = 15 * 60 * 1000;
+    const MIN_INTERVAL = 2 * 60 * 1000 + 10 * 1000;
     const key = 'last_t1'
     const lastExecution = localStorage.getItem(key);
     const now = Date.now();
 
     if (!lastExecution || now - lastExecution >= MIN_INTERVAL) {
-        const url = `${window.location.origin}/build.php?id=21&gid=19`;
+        const url = `${window.location.origin}/build.php?id=24`;
 
         const response = await fetch(url);
         const text = await response.text();
@@ -50,11 +52,32 @@ const recruit = async () => {
 }
 
 const farmOasis = async () => {
+    const currentVillageCoords = [57, -99];
     const keyBuilder = (coords) => `f${coords}f`;
     const farmTroopCount = 2;
-    const farmList = [[76,38],[75,38],[76,41],[80,37],[80,40],[76,42],[76,34],[75,42],[81,40],[77,43],[77,33],[76,43],[76,33],[72,40],[80,43],[72,35],[83,37],[76,32],[78,32],[75,32],[72,42],[82,42],[71,41],[76,31],[81,32],[80,45],[72,44],[72,32],[78,46],[81,31],[78,30],[69,36],[75,30],[73,46],[85,34],[77,47],[76,47],[68,39],[68,37],[75,29],[86,42],[87,38],[71,30],[76,48],[67,39],[87,37],[72,47],[87,41],[67,35],[69,31],[87,34],[71,47],[66,39],[88,37],[75,27],[88,35],[77,50],[78,50],[89,39],[72,49],[66,33],[75,50],[67,45],[65,41],[89,35],[83,49],[66,44],[71,27],[65,42],[89,34],[69,48],[85,48],[82,50],[64,38],[84,49],[66,45],[70,27],[75,51],[90,40],[64,36],[90,36],[65,44],[71,26],[81,51],[69,27],[73,25],[70,26],[64,33],[91,38],[67,48],[91,40],[87,28],[80,52],[91,35],[72,52],[82,24],[77,53],[68,26],[77,23],[75,23],[63,44],[63,32],[90,30],[69,25],[85,25],[92,41],[81,53],[92,42],[91,31],[70,24],[84,24],[68,51],[86,51],[68,25],[92,43],[91,46],[92,32],[89,27],[67,51],[87,51],[64,48],[90,48],[91,47],[68,24],[69,23],[90,27],[66,25],[91,28],[62,47],[68,23],[64,50],[91,27],[67,23],[90,25],[92,49],[92,27],[90,52],[63,51],[92,26],[65,23],[64,53],[64,23],[63,23]];
+
+    const mapSearch = await fetch(`${window.location.origin}/api/v1/map/position`, {
+        method: "POST", 
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({data:{
+            x: currentVillageCoords[0],
+            y: currentVillageCoords[1],
+            zoomLevel: 3
+        }})
+    });
+
+    const jsonResult = await mapSearch.json();
+
+    const farmList = jsonResult.tiles.filter(k => k.did === -1 && !k.text.includes('animals') && !k.uid).sort((a, b) => {
+        const distA = Math.hypot(a.position.x - currentVillageCoords[0], a.position.y - currentVillageCoords[1]);
+        const distB = Math.hypot(b.position.x - currentVillageCoords[0], b.position.y - currentVillageCoords[1]);
+        return distA - distB;
+    }).map(k => [k.position.x, k.position.y]);
+
     let selectedFarm = farmList[0];
-    const intervalFarmTime = 1000 * 60 * 60;
+    const intervalFarmTime = 1000 * 60 * 14;
 
     const dateNow = Date.now();
 
@@ -68,6 +91,7 @@ const farmOasis = async () => {
 
         if (i === farmList.length - 1) {
             console.log('Nothing else to farm.');
+            return;
         }
     }
 
@@ -211,63 +235,118 @@ const triggerBuildActionButton = async (button) => {
     return false;
 }
 
-const upgradeResources = async () => {
-    const cerealSlots = new Set([2, 8, 9, 12, 13, 15]);
-    const specialBuildingIds = [27];
-    const allBuildingIds = [...Array.from({ length: 18 }, (_, i) => i + 1), ...specialBuildingIds];
+const fetchVillageDocument = async (path) => {
+    const response = await fetch(`${window.location.origin}/${path}`);
+    const text = await response.text();
+    return new DOMParser().parseFromString(text, 'text/html');
+}
 
-    const requests = allBuildingIds.map(async (buildingId) => {
-        const upgradeButton = await getBuildActionButton(buildingId);
+const extractOptions = (document) => Array.from(document.getElementsByClassName('good'))
+    .map(e => ({
+        id: e.getAttribute('href').split('id=')[1].split('&')[0],
+        level: Number(e.getElementsByClassName('labelLayer')[0]?.innerText || '0') + Number(e.classList.contains('underConstruction') ? 1 : 0)
+    }));
 
-        if (!upgradeButton) {
-            return null;
-        }
+const upgradeBuilds = async () => {
+    const strictGroupOrder = false;
 
-        // Extract next level from button text (last integer)
-        const match = upgradeButton.value.match(/\d+$/);
-        const nextLevel = match ? parseInt(match[0], 10) : Infinity;
-        const isCereal = cerealSlots.has(buildingId);
-        const isBonusBuilding = specialBuildingIds.includes(buildingId);
+    const queue = [[
+        [1, 10],
+        [2, 10],
+        [3, 10],
+        [4, 10],
+        [5, 10],
+        [6, 10],
+        [7, 10],
+        [8, 10],
+        [9, 10],
+        [10, 10],
+        [11, 10],
+        [12, 10],
+        [13, 10],
+        [14, 10],
+        [15, 10],
+        [16, 10],
+        [17, 10],
+        [18, 10]]
+    ];
 
-        return { isCereal, nextLevel, upgradeButton, isBonusBuilding };
-    });
-
-    // Wait for all requests
-    const buildings = (await Promise.all(requests)).filter(Boolean);
-
-    if (buildings.length === 0) {
-        console.log("No resources can be upgraded.");
+    if (queue.length === 0) {
+        console.log('Nothing queued');
         return;
     }
 
+    const queued = document.getElementsByClassName('buildDuration').length;
+    if (queued >= 2) {
+        console.log('Fully booked');
+        return;
+    }
+
+    const [documentVil1, documentVil2] = await Promise.all([
+        fetchVillageDocument('dorf1.php'),
+        fetchVillageDocument('dorf2.php')
+    ]);
+    
+    const options = [...extractOptions(documentVil1), ...extractOptions(documentVil2)];
+
+    if (options === 0) {
+        console.log('Nothing available to build.');
+        return;
+    }
+
+    const cerealSlots = new Set([2, 8, 9, 12, 13, 15]);
+
+    options.sort((a, b) => Number(a.level) - Number(b.level));
+
     const cerealForProduction = Number(document.getElementById('stockBarFreeCrop').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
+    const currentCereal = Number(document.getElementById('l4').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
+    const currentGranary = Number(document.getElementsByClassName('capacity')[1].innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
+    const cerealRate = currentCereal / currentGranary;
 
-    buildings.sort((a, b) => {
-        if (a.isBonusBuilding !== b.isBonusBuilding) {
-            return a.isBonusBuilding ? -1 : 1; // Prioritize bonus buildings
-        }
-        return a.nextLevel - b.nextLevel; // Then sort by nextLevel
-    });
+    for (const group of queue) {
+        const upgradeable = options
+            .filter(o => group.some(([id]) => id === Number(o.id)))
+            .sort((a, b) => Number(a.level) - Number(b.level));
 
-    for (const building of buildings) {
-        const { upgradeButton, isCereal } = building;
+        for (const option of upgradeable) {
+            const [id, targetLevel] = group.find(([gid]) => gid === Number(option.id)) || [];
+            if (!id) {
+                continue;
+            }
+            
+            const isCereal = cerealSlots.has(id);
 
-        const currentCereal = Number(document.getElementById('l4').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
-        const currentGranary = Number(document.getElementsByClassName('capacity')[1].innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
-        const cerealRate = currentCereal / currentGranary;
+            if (isCereal && cerealForProduction > 25 && cerealRate > 0.25) {
+                console.log('Skipping cereal field. No need yet.');
+                continue;
+            }
 
-        if (isCereal && cerealForProduction > 25 && cerealRate > 0.25) {
-            console.log('Skipping cereal field. No need yet.');
-            continue;
-        }
+            await sleep(Math.random() * 2000);
 
-        // If the button exists, try to trigger the upgrade
-        if (upgradeButton) {
+            const upgradeButton = await getBuildActionButton(id);
+
+            if (!upgradeButton) {
+                continue;
+            }
+
+            const match = upgradeButton.value.match(/\d+$/);
+            const nextLevel = match ? parseInt(match[0], 10) : Infinity;
+            
+            if (nextLevel > targetLevel) {
+                console.log(`${id} level already too high. Continuing.`);
+                continue;
+            }
+
             const success = await triggerBuildActionButton(upgradeButton);
 
             if (success) {
                 return;
             }
+        }
+
+        if (strictGroupOrder) {
+            console.log("Couldn't upgrade buildings from priority level 1. Returning.");
+            return;
         }
     }
 
@@ -320,13 +399,13 @@ const upgradeStorageIfNeeded = async () => {
     }
 }
 
-upgradeResources();
+upgradeBuilds();
 upgradeStorageIfNeeded();
 //balanceHeroProduction();
 farmOasis();
-recruit();
+//recruit();
 
-console.log("Reloading in 60s.");
+console.log("Reloading in 500s.");
 setTimeout(() => {
     window.location.reload(true);
-}, 1000 * 60);
+}, 1000 * 500);
