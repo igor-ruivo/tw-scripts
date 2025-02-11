@@ -14,7 +14,7 @@
 const currentVillageCoords = [-24, -50];
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const MIN_INTERVAL_RECRUIT = 33 * 60 * 1000;
+const MIN_INTERVAL_RECRUIT = 14 * 60 * 1000;
 const SEND_TIME_TRIP = 1000 * 60 * 45;
 const blockHeroLootIfHasAdventures = false;
 
@@ -24,7 +24,7 @@ const recruit = async () => {
     const now = Date.now();
 
     if (!lastExecution || now - lastExecution >= MIN_INTERVAL_RECRUIT) {
-        const url = `${window.location.origin}/build.php?id=30`;
+        const url = `${window.location.origin}/build.php?id=24`;
 
         const response = await fetch(url);
         const text = await response.text();
@@ -41,7 +41,7 @@ const recruit = async () => {
         sendFormData.append('checksum', checksum);
         sendFormData.append('s', s);
         sendFormData.append('did', did);
-        sendFormData.append('t4', '1');
+        sendFormData.append('t1', '1');
         sendFormData.append('s1', 'ok');
 
         await fetch(url, {
@@ -52,7 +52,7 @@ const recruit = async () => {
             }
         });
         localStorage.setItem(key, now);
-        window.location.reload(true);
+        //window.location.reload(true);
     }
 }
 
@@ -78,6 +78,128 @@ const adventure = async () => {
     }
 
     //console.log(JSON.parse(text.match(/data:\s*(\{.*?\})\s*,?\n\s*mapMarks:/s)[1]).elements.map(k => k.symbols[0]));
+}
+
+const farmPlayers = async () => {
+    const keyBuilder = (coords) => `f${coords}f`;
+    const horseTroopCount = 1;
+
+    const villageSearch = await fetch(`${window.location.origin}/dorf1.php`);
+    const villageText = await villageSearch.text();
+
+    const villageParser = new DOMParser();
+    const villageDoc = villageParser.parseFromString(villageText, 'text/html');
+    const horseCount = Number(Array.from(villageDoc.getElementById('troops').querySelectorAll("tbody tr")).find(row => row.querySelector(".un")?.textContent.trim().startsWith("Theutates Thunder"))?.querySelector(".num")?.textContent.trim() ?? '0');
+
+    if (horseTroopCount > horseCount) {
+        console.log('Wont try to send attack. Not enough troops');
+        return;
+    }
+
+    const dateNow = Date.now();
+
+    const farmList = [
+        [-25, -46],
+        [-31, -48],
+        [-22, -46],
+        [-21, -48],
+    ].sort((a, b) => {
+        const distA = Math.hypot(a[0] - currentVillageCoords[0], a[1] - currentVillageCoords[1]);
+        const distB = Math.hypot(b[0] - currentVillageCoords[0], b[1] - currentVillageCoords[1]);
+        return distA - distB;
+    });
+
+    let selectedFarm = farmList[0];
+
+    for (let i = 0; i < farmList.length; i++) {
+        const currCord = farmList[i];
+        const lastFarm = localStorage.getItem(keyBuilder(currCord));
+        if (!lastFarm || (dateNow - lastFarm) >= SEND_TIME_TRIP ) {
+            selectedFarm = currCord;
+            break;
+        }
+
+        if (i === farmList.length - 1) {
+            console.log('No players left to farm.');
+            return;
+        }
+    }
+
+    const url = `${window.location.origin}/build.php?gid=16&tt=2`;
+
+    const formData = new URLSearchParams();
+    formData.append('troop[t4]', horseTroopCount);
+    formData.append('troop[t11]', '');
+    formData.append('villagename', '');
+    formData.append('x', selectedFarm[0]);
+    formData.append('y', selectedFarm[1]);
+    formData.append('eventType', '4');
+    formData.append('ok', 'ok');
+
+    const result = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+    });
+
+    const resultText = await result.text();
+    const parser = new DOMParser();
+    const document = parser.parseFromString(resultText, 'text/html');
+
+    const script = document.getElementById('confirmSendTroops_script');
+    if (!script) {
+        return;
+    }
+
+    const actualTroopsBeingSent = document.getElementById('troopSendForm');
+    if (Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t4]"')[0].value) !== horseTroopCount) {
+        console.log('Not enough troops to attack player.');
+        return;
+    }
+
+    const checksum = script.textContent.replaceAll(/\\u0027/g, "'").match(/document\.querySelector\(['"]#troopSendForm input\[name=checksum\]['"]\)\.value\s*=\s*['"]([a-f0-9]{6})['"]/i)[1];
+    
+    const action = document.getElementById('troopSendForm').children[0].value;
+    const villageId = action.split("/")[1];
+
+    const actionUrl = `${window.location.origin}/build.php?gid=16&tt=2`;
+
+    const sendFormData = new FormData();
+    sendFormData.append('action', action);
+    sendFormData.append('eventType', '4');
+    sendFormData.append('villagename', '');
+    sendFormData.append('x', selectedFarm[0]);
+    sendFormData.append('y', selectedFarm[1]);
+    sendFormData.append('redeployHero', '');
+    sendFormData.append('checksum', checksum);
+    sendFormData.append('troops[0][t1]', '0');
+    sendFormData.append('troops[0][t2]', '0');
+    sendFormData.append('troops[0][t3]', '0');
+    sendFormData.append('troops[0][t4]', horseTroopCount);
+    sendFormData.append('troops[0][t5]', '0');
+    sendFormData.append('troops[0][t6]', '0');
+    sendFormData.append('troops[0][t7]', '0');
+    sendFormData.append('troops[0][t8]', '0');
+    sendFormData.append('troops[0][t9]', '0');
+    sendFormData.append('troops[0][t10]', '0');
+    sendFormData.append('troops[0][t11]', '0');
+    sendFormData.append('troops[0][scoutTarget]', '');
+    sendFormData.append('troops[0][catapultTarget1]', '');
+    sendFormData.append('troops[0][catapultTarget2]', '');
+    sendFormData.append('troops[0][villageId]', villageId);
+
+    await fetch(actionUrl, {
+        method: 'POST',
+        body: sendFormData,
+        headers: {
+            'Accept': 'application/json'
+        }
+    });
+
+    localStorage.setItem(keyBuilder(selectedFarm), dateNow);
+    window.location.reload(true);
 }
 
 const farmOasis = async (animals) => {
@@ -161,6 +283,11 @@ const farmOasis = async (animals) => {
     }).map(k => [k.position.x, k.position.y]);
 
     let selectedFarm = farmList[0];
+
+    if (!selectedFarm) {
+        console.log('No animals to farm with hero.');
+        return;
+    }
 
     const dateNow = Date.now();
 
@@ -361,6 +488,9 @@ const upgradeBuilds = async () => {
             [18, 10]
         ],
         [
+            [19, 10]
+        ],
+        [
             [2, 10],
             [8, 10],
             [9, 10],
@@ -511,10 +641,11 @@ upgradeBuilds();
 upgradeStorageIfNeeded();
 //balanceHeroProduction();
 farmOasis(true);
-farmOasis(false);
+farmPlayers();
+//farmOasis(false);
 //adventure();
 
-recruit();
+//recruit();
 //setInterval(recruit, MIN_INTERVAL_RECRUIT);
 
 console.log("Reloading in 500s.");
