@@ -117,6 +117,18 @@ const farmPlayers = async () => {
         [-34, -43],
         [-38, -44],
         [-27, -53],
+        [-11, -50],
+        [-9, -47],
+        [-11, -43],
+        [-18, -40],
+        [-20, -40],
+        [-19, -39],
+        [-22, -40],
+        [-26, -38],
+        [-32, -44],
+        [-15, -40],
+        [-35, -47],
+        [-14, -38],
     ].sort((a, b) => {
         const distA = Math.hypot(a[0] - currentVillageCoords[0], a[1] - currentVillageCoords[1]);
         const distB = Math.hypot(b[0] - currentVillageCoords[0], b[1] - currentVillageCoords[1]);
