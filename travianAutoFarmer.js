@@ -97,6 +97,40 @@ const farmPlayers = async () => {
 
     const dateNow = Date.now();
 
+    const mapSearch = await fetch(`${window.location.origin}/api/v1/map/position`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({data:{
+            x: currentVillageCoords[0],
+            y: currentVillageCoords[1],
+            zoomLevel: 3
+        }})
+    });
+
+    const jsonResult = await mapSearch.json();
+
+    const farmList2 = jsonResult.tiles
+        .filter(k => {
+            const popText = k.text.match(/{k\.einwohner}\s(\d+)/);
+            if (!popText) {
+                return false;
+            }
+
+            const population = popText[1];
+            if (!population) {
+                return false;
+            }
+            return population <= 50;
+        })
+        .sort((a, b) => {
+            const distA = Math.hypot(a.position.x - currentVillageCoords[0], a.position.y - currentVillageCoords[1]);
+            const distB = Math.hypot(b.position.x - currentVillageCoords[0], b.position.y - currentVillageCoords[1]);
+            return distA - distB;
+        })
+        .map(k => [k.position.x, k.position.y]);
+/*
     const farmList = [
         [-25, -46],
         [-31, -48],
@@ -133,12 +167,12 @@ const farmPlayers = async () => {
         const distA = Math.hypot(a[0] - currentVillageCoords[0], a[1] - currentVillageCoords[1]);
         const distB = Math.hypot(b[0] - currentVillageCoords[0], b[1] - currentVillageCoords[1]);
         return distA - distB;
-    });
+    });*/
 
-    let selectedFarm = farmList[0];
+    let selectedFarm = farmList2[0];
 
-    for (let i = 0; i < farmList.length; i++) {
-        const currCord = farmList[i];
+    for (let i = 0; i < farmList2.length; i++) {
+        const currCord = farmList2[i];
         const lastFarm = localStorage.getItem(keyBuilder(currCord));
         if (!lastFarm || (dateNow - lastFarm) >= SEND_TIME_TRIP ) {
 
@@ -158,13 +192,16 @@ const farmPlayers = async () => {
             const troopInfo = html.getElementById('troop_info');
             const noLosses = (!!troopInfo.querySelector('[alt="Won as attacker without losses."]')) || troopInfo.innerText.includes('No information');
 
-            if (noLosses) {
+            const canSend = Array.from(html.querySelectorAll(".options .option .a.arrow"))
+            .some(el => el.innerText.includes("Send troops") && !el.classList.contains("disabled"));
+
+            if (noLosses && canSend) {
                 selectedFarm = currCord;
                 break;
             }
         }
 
-        if (i === farmList.length - 1) {
+        if (i === farmList2.length - 1) {
             console.log('No players left to farm.');
             return;
         }
