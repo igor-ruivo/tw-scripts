@@ -111,10 +111,15 @@ const farmPlayers = async () => {
 
     const jsonResult = await mapSearch.json();
 
-    const farmList2 = jsonResult.tiles
+    const farmList = jsonResult.tiles
         .filter(k => {
             const popText = k.text.match(/{k\.einwohner}\s(\d+)/);
             if (!popText) {
+                return false;
+            }
+
+            const isNatars = k.text.includes('Natars');
+            if (isNatars) {
                 return false;
             }
 
@@ -130,49 +135,11 @@ const farmPlayers = async () => {
             return distA - distB;
         })
         .map(k => [k.position.x, k.position.y]);
-/*
-    const farmList = [
-        [-25, -46],
-        [-31, -48],
-        [-22, -46],
-        [-21, -48],
-        [-28, -46],
-        [-27, -45],
-        [-20, -45],
-        [-13, -57],
-        [-9, -56],
-        [-14, -53],
-        [-13, -50],
-        [-15, -44],
-        [-20, -43],
-        [-23, -41],
-        [-29, -43],
-        [-33, -42],
-        [-34, -43],
-        [-38, -44],
-        [-27, -53],
-        [-11, -50],
-        [-9, -47],
-        [-11, -43],
-        [-18, -40],
-        [-20, -40],
-        [-19, -39],
-        [-22, -40],
-        [-26, -38],
-        [-32, -44],
-        [-15, -40],
-        [-35, -47],
-        [-14, -38],
-    ].sort((a, b) => {
-        const distA = Math.hypot(a[0] - currentVillageCoords[0], a[1] - currentVillageCoords[1]);
-        const distB = Math.hypot(b[0] - currentVillageCoords[0], b[1] - currentVillageCoords[1]);
-        return distA - distB;
-    });*/
 
-    let selectedFarm = farmList2[0];
+    let selectedFarm = farmList[0];
 
-    for (let i = 0; i < farmList2.length; i++) {
-        const currCord = farmList2[i];
+    for (let i = 0; i < farmList.length; i++) {
+        const currCord = farmList[i];
         const lastFarm = localStorage.getItem(keyBuilder(currCord));
         if (!lastFarm || (dateNow - lastFarm) >= SEND_TIME_TRIP ) {
 
@@ -201,7 +168,7 @@ const farmPlayers = async () => {
             }
         }
 
-        if (i === farmList2.length - 1) {
+        if (i === farmList.length - 1) {
             console.log('No players left to farm.');
             return;
         }
