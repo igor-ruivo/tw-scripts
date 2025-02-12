@@ -14,17 +14,16 @@
 const currentVillageCoords = [-24, -50];
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const MIN_INTERVAL_RECRUIT = 14 * 60 * 1000;
-const SEND_TIME_TRIP = 1000 * 60 * 45;
+const SEND_TIME_TRIP = 1000 * 60 * 10;
 const blockHeroLootIfHasAdventures = false;
 
-const recruit = async () => {
-    const key = 'last_t1'
+const recruit = async (troopConfig) => {
+    const key = `last_${String(troopConfig.id)}`
     const lastExecution = localStorage.getItem(key);
     const now = Date.now();
 
-    if (!lastExecution || now - lastExecution >= MIN_INTERVAL_RECRUIT) {
-        const url = `${window.location.origin}/build.php?id=24`;
+    if (!lastExecution || now - lastExecution >= troopConfig.timeout) {
+        const url = `${window.location.origin}/build.php?id=${troopConfig.id}`;
 
         const response = await fetch(url);
         const text = await response.text();
@@ -41,7 +40,7 @@ const recruit = async () => {
         sendFormData.append('checksum', checksum);
         sendFormData.append('s', s);
         sendFormData.append('did', did);
-        sendFormData.append('t1', '1');
+        sendFormData.append(troopConfig.troopId, String(troopConfig.troopCount));
         sendFormData.append('s1', 'ok');
 
         await fetch(url, {
@@ -103,6 +102,21 @@ const farmPlayers = async () => {
         [-31, -48],
         [-22, -46],
         [-21, -48],
+        [-28, -46],
+        [-27, -45],
+        [-20, -45],
+        [-13, -57],
+        [-9, -56],
+        [-14, -53],
+        [-13, -50],
+        [-15, -44],
+        [-20, -43],
+        [-23, -41],
+        [-29, -43],
+        [-33, -42],
+        [-34, -43],
+        [-38, -44],
+        [-27, -53],
     ].sort((a, b) => {
         const distA = Math.hypot(a[0] - currentVillageCoords[0], a[1] - currentVillageCoords[1]);
         const distB = Math.hypot(b[0] - currentVillageCoords[0], b[1] - currentVillageCoords[1]);
@@ -115,8 +129,27 @@ const farmPlayers = async () => {
         const currCord = farmList[i];
         const lastFarm = localStorage.getItem(keyBuilder(currCord));
         if (!lastFarm || (dateNow - lastFarm) >= SEND_TIME_TRIP ) {
-            selectedFarm = currCord;
-            break;
+
+            const reports = await fetch(`${window.location.origin}/api/v1/map/tile-details`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({"x":currCord[0],"y":currCord[1]})
+            });
+
+            const reportsJson = await reports.json();
+            const htmlComponent = reportsJson.html;
+
+            const parser = new DOMParser();
+            const html = parser.parseFromString(htmlComponent, 'text/html');
+            const troopInfo = html.getElementById('troop_info');
+            const noLosses = (!!troopInfo.querySelector('[alt="Won as attacker without losses."]')) || troopInfo.innerText.includes('No information');
+
+            if (noLosses) {
+                selectedFarm = currCord;
+                break;
+            }
         }
 
         if (i === farmList.length - 1) {
@@ -160,7 +193,7 @@ const farmPlayers = async () => {
     }
 
     const checksum = script.textContent.replaceAll(/\\u0027/g, "'").match(/document\.querySelector\(['"]#troopSendForm input\[name=checksum\]['"]\)\.value\s*=\s*['"]([a-f0-9]{6})['"]/i)[1];
-    
+
     const action = document.getElementById('troopSendForm').children[0].value;
     const villageId = action.split("/")[1];
 
@@ -216,7 +249,7 @@ const farmOasis = async (animals) => {
     const heroIsInVillage = villageDoc.getElementById('troops').getElementsByClassName('uhero').length > 0;
     const troopCount = Number(Array.from(villageDoc.getElementById('troops').querySelectorAll("tbody tr")).find(row => row.querySelector(".un")?.textContent.trim().startsWith("Phalanx"))?.querySelector(".num")?.textContent.trim() ?? '0');
     const horseCount = Number(Array.from(villageDoc.getElementById('troops').querySelectorAll("tbody tr")).find(row => row.querySelector(".un")?.textContent.trim().startsWith("Theutates Thunder"))?.querySelector(".num")?.textContent.trim() ?? '0');
-    
+
     const useHorses = horseTroopCount <= horseCount;
 
     if (animals) {
@@ -253,7 +286,7 @@ const farmOasis = async (animals) => {
     }
 
     const mapSearch = await fetch(`${window.location.origin}/api/v1/map/position`, {
-        method: "POST", 
+        method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
@@ -274,7 +307,7 @@ const farmOasis = async (animals) => {
             const animalDocument = animalParser.parseFromString(k.text, 'text/html');
             animalCount = Array.from(animalDocument.getElementsByClassName('value')).map(k => k.innerText).reduce((a, b) => Number(a) + Number(b), 0);
         }
-        
+
         return k.did === -1 && animals === k.text.includes('animals') && !k.uid && animalCount < 15;
     }).sort((a, b) => {
         const distA = Math.hypot(a.position.x - currentVillageCoords[0], a.position.y - currentVillageCoords[1]);
@@ -345,7 +378,7 @@ const farmOasis = async (animals) => {
     }
 
     const checksum = script.textContent.replaceAll(/\\u0027/g, "'").match(/document\.querySelector\(['"]#troopSendForm input\[name=checksum\]['"]\)\.value\s*=\s*['"]([a-f0-9]{6})['"]/i)[1];
-    
+
     const action = document.getElementById('troopSendForm').children[0].value;
     const villageId = action.split("/")[1];
 
@@ -515,7 +548,7 @@ const upgradeBuilds = async () => {
         console.log('Fully booked');
         return;
     }
-    
+
     const options = [...extractOptions(documentVil1), ...extractOptions(documentVil2)];
 
     if (options === 0) {
@@ -542,7 +575,7 @@ const upgradeBuilds = async () => {
             if (!id) {
                 continue;
             }
-            
+
             const isCereal = cerealSlots.has(id);
 
             if (isCereal && cerealForProduction > 10/* && cerealRate > 0.25*/) {
@@ -560,7 +593,7 @@ const upgradeBuilds = async () => {
 
             const match = upgradeButton.value.match(/\d+$/);
             const nextLevel = match ? parseInt(match[0], 10) : Infinity;
-            
+
             if (nextLevel > targetLevel) {
                 console.log(`${id} level already too high. Continuing.`);
                 continue;
@@ -589,7 +622,7 @@ const upgradeStorageIfNeeded = async () => {
         console.log('Fully booked');
         return;
     }
-    
+
     const currentWood = Number(document.getElementById('l1').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
     const currentClay = Number(document.getElementById('l2').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
     const currentIron = Number(document.getElementById('l3').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
@@ -608,7 +641,7 @@ const upgradeStorageIfNeeded = async () => {
 
     const maxResourceValue = Math.max(currentWood, currentClay, currentIron);
     const currentWarehouseRatio = maxResourceValue / currentWarehouse;
-    
+
     console.log(`Warehouse at ${currentWarehouseRatio * 100}%`);
 
     if (currentWarehouseRatio > 0.9) {
@@ -645,8 +678,19 @@ farmPlayers();
 //farmOasis(false);
 //adventure();
 
-//recruit();
-//setInterval(recruit, MIN_INTERVAL_RECRUIT);
+recruit({
+    id: 24,
+    troopId: 't1',
+    troopCount: 1,
+    timeout: 14 * 60 * 1000
+});
+
+recruit({
+    id: 30,
+    troopId: 't4',
+    troopCount: 1,
+    timeout: 33 * 60 * 1000
+});
 
 console.log("Reloading in 500s.");
 setTimeout(() => {
