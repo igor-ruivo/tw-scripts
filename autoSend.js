@@ -308,7 +308,7 @@ async function nextIteration() {
 	const villagesToBeHelped = [];
 
 	villages.forEach(v => {
-		const coords = v.querySelectorAll("td")[1].innerText;
+		const coords = v.querySelectorAll("td")[3].innerText;
 		if(villageIsSupplier() && villageIsSupplierOfSpecificVillage(coords)) {
 			if(singleTradeForEachVillageAtTime && villageIsAlreadySupplying(coords)) {
 				console.log("A aldeia já está a enviar recursos para " + coords);
@@ -324,7 +324,7 @@ async function nextIteration() {
 
 	for(let i = 0; i < villagesToBeHelped.length; i++) {
 		const currentVillage = villagesToBeHelped[i];
-		const coordinates = currentVillage.children[1].innerText;
+		const coordinates = currentVillage.children[3].innerText;
 
 		console.log("A analisar possível fornecimento para " + coordinates);
 
