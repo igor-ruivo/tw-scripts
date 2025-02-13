@@ -14,7 +14,7 @@
 const currentVillageCoords = [-24, -50];
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const SEND_TIME_TRIP = 1000 * 60 * 10;
+const SEND_TIME_TRIP = 1000 * 60 * 15;
 const blockHeroLootIfHasAdventures = false;
 
 const recruit = async (troopConfig) => {
@@ -517,10 +517,10 @@ const upgradeBuilds = async () => {
 
     const queue = [
         [
-            [26, 10]
+            [26, 20]
         ],
         [
-            [31, 10]
+            [23, 5]
         ],
         [
             [1, 10],
@@ -535,9 +535,6 @@ const upgradeBuilds = async () => {
             [16, 10],
             [17, 10],
             [18, 10]
-        ],
-        [
-            [19, 10]
         ],
         [
             [2, 10],
