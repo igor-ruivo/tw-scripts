@@ -206,93 +206,89 @@ const script = async () => {
     
                 if (noLosses && canSend) {
                     selectedFarm = [farm.position.x, farm.position.y];
-                    break;
+                    
+                    const url = `${window.location.origin}/build.php?gid=16&tt=2`;
+
+                    const formData = new URLSearchParams();
+                    formData.append('troop[t4]', horseTroopCount);
+                    formData.append('troop[t11]', '');
+                    formData.append('villagename', '');
+                    formData.append('x', selectedFarm[0]);
+                    formData.append('y', selectedFarm[1]);
+                    formData.append('eventType', '4');
+                    formData.append('ok', 'ok');
+
+                    const result = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: formData.toString(),
+                    });
+
+                    const resultText = await result.text();
+                    const parser = new DOMParser();
+                    const document = parser.parseFromString(resultText, 'text/html');
+
+                    const script = document.getElementById('confirmSendTroops_script');
+                    if (!script) {
+                        continue;
+                    }
+
+                    const actualTroopsBeingSent = document.getElementById('troopSendForm');
+                    if (Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t4]"')[0].value) !== horseTroopCount) {
+                        console.log('Not enough troops to attack player.');
+                        return;
+                    }
+
+                    const checksum = script.textContent.replaceAll(/\\u0027/g, "'").match(/document\.querySelector\(['"]#troopSendForm input\[name=checksum\]['"]\)\.value\s*=\s*['"]([a-f0-9]{6})['"]/i)[1];
+
+                    const action = document.getElementById('troopSendForm').children[0].value;
+                    const villageId = action.split("/")[1];
+
+                    const actionUrl = `${window.location.origin}/build.php?gid=16&tt=2`;
+
+                    const sendFormData = new FormData();
+                    sendFormData.append('action', action);
+                    sendFormData.append('eventType', '4');
+                    sendFormData.append('villagename', '');
+                    sendFormData.append('x', selectedFarm[0]);
+                    sendFormData.append('y', selectedFarm[1]);
+                    sendFormData.append('redeployHero', '');
+                    sendFormData.append('checksum', checksum);
+                    sendFormData.append('troops[0][t1]', '0');
+                    sendFormData.append('troops[0][t2]', '0');
+                    sendFormData.append('troops[0][t3]', '0');
+                    sendFormData.append('troops[0][t4]', horseTroopCount);
+                    sendFormData.append('troops[0][t5]', '0');
+                    sendFormData.append('troops[0][t6]', '0');
+                    sendFormData.append('troops[0][t7]', '0');
+                    sendFormData.append('troops[0][t8]', '0');
+                    sendFormData.append('troops[0][t9]', '0');
+                    sendFormData.append('troops[0][t10]', '0');
+                    sendFormData.append('troops[0][t11]', '0');
+                    sendFormData.append('troops[0][scoutTarget]', '');
+                    sendFormData.append('troops[0][catapultTarget1]', '');
+                    sendFormData.append('troops[0][catapultTarget2]', '');
+                    sendFormData.append('troops[0][villageId]', villageId);
+
+                    await fetch(actionUrl, {
+                        method: 'POST',
+                        body: sendFormData,
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    localStorage.setItem(keyBuilder(selectedFarm), dateNow);
+                    console.log(`Sent attack to ${selectedFarm}`);
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
         }
 
-        if (!selectedFarm) {
-            console.log('No players left to farm.');
-            return;
-        }
-
-        const url = `${window.location.origin}/build.php?gid=16&tt=2`;
-
-        const formData = new URLSearchParams();
-        formData.append('troop[t4]', horseTroopCount);
-        formData.append('troop[t11]', '');
-        formData.append('villagename', '');
-        formData.append('x', selectedFarm[0]);
-        formData.append('y', selectedFarm[1]);
-        formData.append('eventType', '4');
-        formData.append('ok', 'ok');
-
-        const result = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: formData.toString(),
-        });
-
-        const resultText = await result.text();
-        const parser = new DOMParser();
-        const document = parser.parseFromString(resultText, 'text/html');
-
-        const script = document.getElementById('confirmSendTroops_script');
-        if (!script) {
-            return;
-        }
-
-        const actualTroopsBeingSent = document.getElementById('troopSendForm');
-        if (Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t4]"')[0].value) !== horseTroopCount) {
-            console.log('Not enough troops to attack player.');
-            return;
-        }
-
-        const checksum = script.textContent.replaceAll(/\\u0027/g, "'").match(/document\.querySelector\(['"]#troopSendForm input\[name=checksum\]['"]\)\.value\s*=\s*['"]([a-f0-9]{6})['"]/i)[1];
-
-        const action = document.getElementById('troopSendForm').children[0].value;
-        const villageId = action.split("/")[1];
-
-        const actionUrl = `${window.location.origin}/build.php?gid=16&tt=2`;
-
-        const sendFormData = new FormData();
-        sendFormData.append('action', action);
-        sendFormData.append('eventType', '4');
-        sendFormData.append('villagename', '');
-        sendFormData.append('x', selectedFarm[0]);
-        sendFormData.append('y', selectedFarm[1]);
-        sendFormData.append('redeployHero', '');
-        sendFormData.append('checksum', checksum);
-        sendFormData.append('troops[0][t1]', '0');
-        sendFormData.append('troops[0][t2]', '0');
-        sendFormData.append('troops[0][t3]', '0');
-        sendFormData.append('troops[0][t4]', horseTroopCount);
-        sendFormData.append('troops[0][t5]', '0');
-        sendFormData.append('troops[0][t6]', '0');
-        sendFormData.append('troops[0][t7]', '0');
-        sendFormData.append('troops[0][t8]', '0');
-        sendFormData.append('troops[0][t9]', '0');
-        sendFormData.append('troops[0][t10]', '0');
-        sendFormData.append('troops[0][t11]', '0');
-        sendFormData.append('troops[0][scoutTarget]', '');
-        sendFormData.append('troops[0][catapultTarget1]', '');
-        sendFormData.append('troops[0][catapultTarget2]', '');
-        sendFormData.append('troops[0][villageId]', villageId);
-
-        await fetch(actionUrl, {
-            method: 'POST',
-            body: sendFormData,
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
-
-        localStorage.setItem(keyBuilder(selectedFarm), dateNow);
-        window.location.reload(true);
+        console.log('No players left to farm.');
     }
 
     const farmOasis = async (animals) => {
