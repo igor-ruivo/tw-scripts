@@ -16,7 +16,9 @@ const script = async () => {
     const SEND_TIME_TRIP = 1000 * 60 * 15;
     const blockHeroLootIfHasAdventures = true;
     const blockCerealWhenNotNeeded = false;
-    const maxPopToFarm = 50;
+    const maxPopToFarm = 100;
+    const minHeroHealth = 20;
+    const maxAnimalCount = 20;
 
     const recruit = async (troopConfig) => {
         const key = `last_${String(troopConfig.id)}`
@@ -326,7 +328,7 @@ const script = async () => {
             const heroSearch = await fetch(`${window.location.origin}/hero/attributes`);
             const heroTxt = await heroSearch.text();
             const heroHP = Number(heroTxt.split('{\"health\":')[1].split(',')[0]);
-            if (heroHP < 40) {
+            if (heroHP < minHeroHealth) {
                 console.log('Hero HP too low');
                 return;
             }
@@ -364,7 +366,7 @@ const script = async () => {
                 animalCount = Array.from(animalDocument.getElementsByClassName('value')).map(k => k.innerText).reduce((a, b) => Number(a) + Number(b), 0);
             }
 
-            return k.did === -1 && animals === k.text.includes('animals') && !k.uid && animalCount < 15;
+            return k.did === -1 && animals === k.text.includes('animals') && !k.uid && animalCount < maxAnimalCount;
         }).sort((a, b) => {
             const distA = Math.hypot(a.position.x - currentVillageCoords[0], a.position.y - currentVillageCoords[1]);
             const distB = Math.hypot(b.position.x - currentVillageCoords[0], b.position.y - currentVillageCoords[1]);
@@ -785,10 +787,10 @@ const script = async () => {
             const maxResourcesToReceiveB = Math.floor(receiver.fillStoragePercentage / 100 * receiverResources.granary);
 
             const helpedMissingResources = {
-                wood: Math.max(maxResourcesToReceiveA - receiverResources.wood + (pendingResources.lumber ?? 0), 0),
-                clay: Math.max(maxResourcesToReceiveA - receiverResources.stone + (pendingResources.clay ?? 0), 0),
-                iron: Math.max(maxResourcesToReceiveA - receiverResources.iron + (pendingResources.iron ?? 0), 0),
-                cereal: Math.max(maxResourcesToReceiveB - receiverResources.crop + (pendingResources.crop ?? 0), 0),
+                wood: Math.max(maxResourcesToReceiveA - (receiverResources.wood + (pendingResources.lumber ?? 0)), 0),
+                clay: Math.max(maxResourcesToReceiveA - (receiverResources.stone + (pendingResources.clay ?? 0)), 0),
+                iron: Math.max(maxResourcesToReceiveA - (receiverResources.iron + (pendingResources.iron ?? 0)), 0),
+                cereal: Math.max(maxResourcesToReceiveB - (receiverResources.crop + (pendingResources.crop ?? 0)), 0),
             }
 
             console.log(`Missing resources in ${receiver.village}:`);
