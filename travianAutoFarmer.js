@@ -515,7 +515,7 @@ const script = async () => {
     }
 
     const getBuildActionButton = async (id) => {
-        const response = await fetch(`${window.location.origin}/build.php?id=${id}`);
+        const response = await fetch(`${window.location.origin}/build.php?id=${id}&t=0`);
         const text = await response.text();
         const parser = new DOMParser();
         const document = parser.parseFromString(text, 'text/html');
@@ -566,18 +566,20 @@ const script = async () => {
                 [36, 5]
             ],
             [
+                [5, 10],
+                [6, 10],
+                [16, 10],
+                [18, 10]
+            ],
+            [
                 [1, 10],
                 [3, 10],
                 [4, 10],
-                [5, 10],
-                [6, 10],
                 [7, 10],
                 [10, 10],
                 [11, 10],
                 [14, 10],
-                [16, 10],
                 [17, 10],
-                [18, 10],
                 [2, 10],
                 [8, 10],
                 [9, 10],
@@ -677,7 +679,7 @@ const script = async () => {
         const helpingSystem = [
             {
                 sender: "-24|-50",
-                saveStoragePercentage: 10,
+                saveStoragePercentage: 0,
                 receivers: [
                     {
                         village: "-21|-46",
@@ -854,7 +856,7 @@ const script = async () => {
 
             const nonce = nonceCall.headers.get("x-nonce");
 
-            const answer = await fetch(`${window.location.origin}/api/v1/marketplace/resources/send`, {
+            await fetch(`${window.location.origin}/api/v1/marketplace/resources/send`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -950,7 +952,7 @@ const script = async () => {
         }
     }
 
-    upgradeBuilds();
+    await upgradeBuilds();
     upgradeStorageIfNeeded();
     //balanceHeroProduction();
     farmOasis(true);
@@ -972,8 +974,10 @@ const script = async () => {
         const iron = jRes.storage.l3;
         const crop = jRes.storage.l4;
 
+        const params = new URLSearchParams(v);
+        const villageId = params.get("newdid");
         resolve({
-            villageId: v.split('=')[1].replace('&', ''),
+            villageId: villageId,
             resources: {
                 storage: storage,
                 granary: granary,
