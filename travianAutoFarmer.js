@@ -13,20 +13,27 @@
 
 const script = async () => {
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-    const SEND_TIME_TRIP = 1000 * 60 * 15;
+    const SEND_TIME_TRIP = 1000 * 60 * 10;
     const blockHeroLootIfHasAdventures = true;
-    const blockCerealWhenNotNeeded = false;
-    const maxPopToFarm = 100;
+    const blockCerealWhenNotNeeded = true;
+    const maxPopToFarm = 120;
     const minHeroHealth = 20;
-    const maxAnimalCount = 20;
+    const maxAnimalCount = 30;
+    const playAd = false;
 
     const recruit = async (troopConfig) => {
-        const key = `last_${String(troopConfig.id)}`
+        const entry = buildings.find(b => b.gid === troopConfig.id);
+        if (!entry) {
+            console.log(`Couldn't find building entry for ${troopConfig.id}`);
+            return;
+        }
+
+        const key = `last_${String(entry.id)}_${currentVillageCoords[0]}|${currentVillageCoords[1]}`
         const lastExecution = localStorage.getItem(key);
         const now = Date.now();
 
         if (!lastExecution || now - lastExecution >= troopConfig.timeout) {
-            const url = `${window.location.origin}/build.php?id=${troopConfig.id}`;
+            const url = `${window.location.origin}/build.php?id=${entry.id}`;
 
             const response = await fetch(url);
             const text = await response.text();
@@ -54,32 +61,105 @@ const script = async () => {
                 }
             });
             localStorage.setItem(key, now);
-            //window.location.reload(true);
         }
     }
 
     const adventure = async () => {
-        const mapSearch = await fetch(`${window.location.origin}/karte.php?zoom=3&x=${currentVillageCoords[0]}&y=${currentVillageCoords[1]}`);
-
-        const text = await mapSearch.text();
-        const adventureParser = new DOMParser();
-        const adventureDoc = adventureParser.parseFromString(text, 'text/html');
-
-        const scripts = adventureDoc.getElementsByTagName('script');
-
-        for (const script of scripts) {
-            const match = script.innerText.match(/data:\s*(\{.*?\})\s*,?\n\s*mapMarks:/s);
-            //console.log(script.innerText);
-            if (match) {
-                console.log(script.innerText)
-                console.log(script.innerText.includes('dventure'))
-                console.log(match[1]);
-                //console.log(JSON.parse(match[1]).elements.map(k => k.symbols[0]));
-                break;
+        const query = `
+            query {
+                ownPlayer {
+                    hero {
+                        adventures {
+                            mapId
+                            x
+                            y
+                            place
+                            difficulty
+                            travelingDuration
+                        }
+                        status {
+                            status
+                            inOasis {
+                                belongsTo {
+                                    mapId
+                                    name
+                                }
+                            }
+                            inVillage {
+                                id
+                                mapId
+                                name
+                                type
+                            }
+                            arrivalAt
+                            arrivalIn
+                            onWayTo {
+                                id
+                                x
+                                y
+                                type
+                                village {
+                                    mapId
+                                    name
+                                }
+                            }
+                        }
+                    }
+                }
             }
+        `;
+
+        const adventuresReq = await fetch(`${window.location.origin}/api/v1/graphql`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                query: query
+            })
+        });
+
+        const adventures = await adventuresReq.json();
+
+        if (!(adventures.data.ownPlayer.hero.adventures > 0 && adventures.data.status === 100)) {
+            console.log('Cant send to adventure.');
+            return;
         }
 
-        //console.log(JSON.parse(text.match(/data:\s*(\{.*?\})\s*,?\n\s*mapMarks:/s)[1]).elements.map(k => k.symbols[0]));
+        const adventure = adventures.data.ownPlayer.hero.adventures[0];
+
+        const nonceCall = await fetch(`${window.location.origin}/api/v1/troop/send`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                "action": "troopsSend",
+                "targetMapId": adventure.mapId,
+                "eventType": 50,
+                "troops": [
+                    {
+                        "t11": 1
+                    }
+                ]
+            })
+        });
+
+        const nonce = nonceCall.headers.get("x-nonce");
+
+        await fetch(`${window.location.origin}/api/v1/troop/send`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-nonce": nonce
+            },
+            body: JSON.stringify({
+                "action": "troopsSend",
+                "targetMapId": adventure.mapId,
+                "eventType": 50,
+                "troops": [
+                    {
+                        "t11": 1
+                    }
+                ]
+            })
+        });
     }
 
     const fetchPlayerPop = async (uid) => {
@@ -516,17 +596,24 @@ const script = async () => {
         localStorage.setItem('lastChangeTime', currentTime);
     }
 
-    const getBuildActionButton = async (id) => {
-        const response = await fetch(`${window.location.origin}/build.php?id=${id}&t=0`);
+    const getBuildActionButton = async (gid, aid) => {
+        const response = await fetch(`${window.location.origin}/build.php?id=${aid}&gid=${gid}&t=0`);
         const text = await response.text();
         const parser = new DOMParser();
         const document = parser.parseFromString(text, 'text/html');
+
+        const primaryButton = playAd ? document
+            .getElementsByClassName('upgradeBuilding')[0]
+            ?.querySelector('button.textButtonV1.green.build.videoFeatureButton') : undefined;
 
         const upgradeButton = document
             .getElementsByClassName('upgradeBuilding')[0]
             ?.querySelector('button.textButtonV1.green.build:not(.videoFeatureButton)');
 
-        return upgradeButton;
+        return {
+            button: primaryButton ?? upgradeButton,
+            currentTitleLevel: document.getElementsByClassName('level')[0].innerText.split(' ')[1]
+        };
     }
 
     const triggerBuildActionButton = async (button) => {
@@ -537,6 +624,43 @@ const script = async () => {
         if (redirectUrl) {
             const response = await fetch(`${window.location.origin}${redirectUrl}`);
             return response.ok;
+        } else {
+            const villageIdMatch = onclickAttr?.match(/villageId\s*:\s*(\d+)/);
+            const slotIdMatch = onclickAttr?.match(/slotId\s*:\s*(\d+)/);
+
+            const villageId = villageIdMatch ? parseInt(villageIdMatch[1], 10) : null;
+            const slotId = slotIdMatch ? parseInt(slotIdMatch[1], 10) : null;
+
+            const response = await fetch(`${window.location.origin}/api/v1/adsales/open`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    "villageId": villageId,
+                    "slotId": slotId
+                }),
+            });
+
+            const res = await response.json();
+            let videoContainer = document.getElementById('videoContainer');
+            if (!videoContainer) {
+                videoContainer = document.createElement('div');
+                videoContainer.id = 'videoContainer';
+                document.body.appendChild(videoContainer);
+            }
+
+            videoContainer.innerHTML = res.html;
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(res.html, 'text/html');
+            const iframe = doc.querySelector('iframe');
+            const iframeSrc = iframe.getAttribute('data-cmp-src');
+            const autoplaySrc = `${iframeSrc}&autoplay=1`;
+
+            iframe.setAttribute('src', autoplaySrc);
+
+            await sleep(2000);
         }
         return false;
     }
@@ -547,50 +671,24 @@ const script = async () => {
         return new DOMParser().parseFromString(text, 'text/html');
     }
 
-    const extractOptions = (document) => Array.from(document.getElementsByClassName('good'))
-        .map(e => ({
-            id: e.getAttribute('href')?.split('id=')[1]?.split('&')[0] || '40',
-            level: Number(e.getElementsByClassName('labelLayer')[0]?.innerText || '0') + Number(e.classList.contains('underConstruction') ? 1 : 0)
-        }));
-
     const upgradeBuilds = async () => {
         const strictGroupOrder = false;
 
         const queue = [
             [
-                [22, 3]
+                [20, 3]
             ],
             [
-                [26, 20]
-            ],
-            [
-                [33, 5],
-                [36, 5]
-            ],
-            [
-                [5, 10],
-                [6, 10],
-                [16, 10],
-                [18, 10]
+                [24, 20]
             ],
             [
                 [1, 10],
-                [3, 10],
-                [4, 10],
-                [7, 10],
-                [10, 10],
-                [11, 10],
-                [14, 10],
-                [17, 10],
                 [2, 10],
-                [8, 10],
-                [9, 10],
-                [12, 10],
-                [13, 10],
-                [15, 10]
+                [3, 10],
+                [4, 10]
             ],
             [
-                [22, 10]
+                [17, 10]
             ]
         ];
 
@@ -599,25 +697,12 @@ const script = async () => {
             return;
         }
 
-        const [documentVil1, documentVil2] = await Promise.all([
-            fetchVillageDocument('dorf1.php'),
-            fetchVillageDocument('dorf2.php')
-        ]);
-
-        const queued = documentVil1.getElementsByClassName('buildDuration').length;
-        if (queued >= 1) {
-            console.log('Fully booked');
-            return;
-        }
-
-        const options = [...extractOptions(documentVil1), ...extractOptions(documentVil2)];
+        const options = buildings.filter(o => o.good);
 
         if (options === 0) {
             console.log('Nothing available to build.');
             return;
         }
-
-        const cerealSlots = new Set([2, 8, 9, 12, 13, 15]);
 
         options.sort((a, b) => Number(a.level) - Number(b.level));
 
@@ -628,16 +713,16 @@ const script = async () => {
 
         for (const group of queue) {
             const upgradeable = options
-                .filter(o => group.some(([id]) => id === Number(o.id)))
+                .filter(o => group.some(([id]) => id === Number(o.gid)))
                 .sort((a, b) => Number(a.level) - Number(b.level));
 
             for (const option of upgradeable) {
-                const [id, targetLevel] = group.find(([gid]) => gid === Number(option.id)) || [];
+                const [id, targetLevel] = group.find(([gid]) => gid === Number(option.gid)) || [];
                 if (!id) {
                     continue;
                 }
 
-                const isCereal = cerealSlots.has(id);
+                const isCereal = id === 4;
 
                 if (blockCerealWhenNotNeeded && isCereal && cerealForProduction > 10/* && cerealRate > 0.25*/) {
                     console.log('Skipping cereal field. No need yet.');
@@ -646,21 +731,22 @@ const script = async () => {
 
                 await sleep(Math.random() * 2000);
 
-                const upgradeButton = await getBuildActionButton(id);
+                const upgradeButton = await getBuildActionButton(option.gid, option.id);
+                const button = upgradeButton.button;
 
-                if (!upgradeButton) {
+                if (!button) {
                     continue;
                 }
 
-                const match = upgradeButton.value.match(/\d+$/);
-                const nextLevel = match ? parseInt(match[0], 10) : Infinity;
+                const match = button.value.match(/\d+$/);
+                const nextLevel = match ? parseInt(match[0], 10) : ((1 + Number(upgradeButton.currentTitleLevel)) ?? Infinity);
 
                 if (nextLevel > targetLevel) {
                     console.log(`${id} level already too high. Continuing.`);
                     continue;
                 }
 
-                const success = await triggerBuildActionButton(upgradeButton);
+                const success = await triggerBuildActionButton(button);
 
                 if (success) {
                     window.location.reload(true);
@@ -669,7 +755,7 @@ const script = async () => {
             }
 
             if (strictGroupOrder) {
-                console.log("Couldn't upgrade buildings from priority level 1. Returning.");
+                console.log("Couldn't upgrade buildings from priority level. Returning.");
                 return;
             }
         }
@@ -681,13 +767,13 @@ const script = async () => {
         const helpingSystem = [
             {
                 sender: "-24|-50",
-                saveStoragePercentage: 0,
+                saveStoragePercentage: 10,
                 receivers: [
                     {
                         village: "-21|-46",
                         did: "25597",
-                        fillStoragePercentage: 75,
-                        minimumToSend: 300
+                        fillStoragePercentage: 20,
+                        minimumToSend: 1000
                     }
                 ]
             }
@@ -884,9 +970,15 @@ const script = async () => {
     }
 
     const upgradeStorageIfNeeded = async () => {
-        const queued = document.getElementsByClassName('buildDuration').length;
-        if (queued >= 1) {
-            console.log('Fully booked');
+        const storageEntry = buildings.find(b => b.gid === 10);
+        if (!storageEntry) {
+            console.log(`Couldn't find building entry for 10`);
+            return;
+        }
+
+        const granaryEntry = buildings.find(b => b.gid === 11);
+        if (!granaryEntry) {
+            console.log(`Couldn't find building entry for 11`);
             return;
         }
 
@@ -895,27 +987,17 @@ const script = async () => {
         const currentIron = Number(document.getElementById('l3').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
         const currentCereal = Number(document.getElementById('l4').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
 
-        console.log(`${currentWood} Wood`);
-        console.log(`${currentClay} Clay`);
-        console.log(`${currentIron} Iron`);
-        console.log(`${currentCereal} Cereal`);
-
         const currentWarehouse = Number(document.getElementsByClassName('capacity')[0].innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
         const currentGranary = Number(document.getElementsByClassName('capacity')[1].innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
-
-        console.log(`${currentWarehouse} Warehouse space`);
-        console.log(`${currentGranary} Granary space`);
 
         const maxResourceValue = Math.max(currentWood, currentClay, currentIron);
         const currentWarehouseRatio = maxResourceValue / currentWarehouse;
 
-        console.log(`Warehouse at ${currentWarehouseRatio * 100}%`);
-
         if (currentWarehouseRatio > 0.9) {
-            // upgrade storage
-            const buildButton = await getBuildActionButton(27);
-            if (buildButton) {
-                await triggerBuildActionButton(buildButton);
+            const buildButton = await getBuildActionButton(storageEntry.gid, storageEntry.id);
+            const button = buildButton.button;
+            if (button) {
+                await triggerBuildActionButton(button);
                 window.location.reload(true);
             } else {
                 console.log("Warehouse could not be upgraded.");
@@ -924,12 +1006,11 @@ const script = async () => {
 
         const currentGranaryRatio = currentCereal / currentGranary;
 
-        console.log(`Granary at ${currentGranaryRatio * 100}%`);
-
         if (currentGranaryRatio > 0.9) {
-            const buildButton = await getBuildActionButton(28);
-            if (buildButton) {
-                await triggerBuildActionButton(buildButton);
+            const buildButton = await getBuildActionButton(granaryEntry.gid, granaryEntry.id);
+            const button = buildButton.button;
+            if (button) {
+                await triggerBuildActionButton(button);
                 window.location.reload(true);
             } else {
                 console.log("Granary could not be upgraded.");
@@ -954,13 +1035,35 @@ const script = async () => {
         }
     }
 
-    await upgradeBuilds();
-    upgradeStorageIfNeeded();
+    const [documentVil1, documentVil2] = await Promise.all([
+        fetchVillageDocument('dorf1.php'),
+        fetchVillageDocument('dorf2.php')
+    ]);
+
+    const queued = documentVil1.getElementsByClassName('buildDuration').length;
+
+    const buildings = [documentVil1, documentVil2]
+        .map(v => Array.from(v.getElementsByClassName('good'))
+            .concat(Array.from(v.getElementsByClassName('maxLevel')))
+            .concat(Array.from(v.getElementsByClassName('notNow')))
+        .map(e => ({
+            good: e.classList.contains('good'),
+            gid: Number(e.parentElement.getAttribute('data-gid') ?? e.getAttribute('data-gid')),
+            id: Number(e.parentElement.getAttribute('data-aid') ?? e.getAttribute('data-aid')),
+            level: Number(e.getElementsByClassName('labelLayer')[0]?.innerText || '0') + Number(e.classList.contains('underConstruction') ? 1 : 0)
+        }))).flat();
+
+    if (queued < 1) {
+        await upgradeBuilds();
+        upgradeStorageIfNeeded();
+    } else {
+        console.log('Fully booked.')
+    }
     //balanceHeroProduction();
-    farmOasis(true);
+    farmOasis(true); // temp
     farmPlayers();
     //farmOasis(false);
-    //adventure();
+    adventure();
 
     const resourcePromises = villages.map(v => new Promise(async (resolve) => {
         const res = await fetch(`${window.location.origin}/api/v1/village/resources${v}`, {
@@ -1006,14 +1109,14 @@ const script = async () => {
     tradeBetweenVillages();
 
     recruit({
-        id: 24,
+        id: 19,
         troopId: 't1',
         troopCount: 1,
         timeout: 14 * 60 * 1000
     });
 
     recruit({
-        id: 30,
+        id: 20,
         troopId: 't4',
         troopCount: 1,
         timeout: 33 * 60 * 1000
