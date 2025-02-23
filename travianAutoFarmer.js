@@ -13,8 +13,7 @@
 
 const script = async () => {
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-    const SEND_TIME_TRIP = 1000 * 60 * 10;
-    const blockHeroLootIfHasAdventures = true;
+    const SEND_TIME_TRIP = 1000 * 60 * 8;
     const blockCerealWhenNotNeeded = true;
     const maxPopToFarm = 120;
     const minHeroHealth = 20;
@@ -414,15 +413,6 @@ const script = async () => {
             }
         }
 
-        if (animals && blockHeroLootIfHasAdventures) {
-            const adventureCount = Number(villageDoc.getElementsByClassName('adventure')[0].children[0].innerText);
-
-            if (adventureCount > 0) {
-                console.log(`There are ${adventureCount} adventures pending.`);
-                return;
-            }
-        }
-
         const mapSearch = await fetch(`${window.location.origin}/api/v1/map/position`, {
             method: "POST",
             headers: {
@@ -625,6 +615,10 @@ const script = async () => {
             const response = await fetch(`${window.location.origin}${redirectUrl}`);
             return response.ok;
         } else {
+            if (!playAd) {
+                return false;
+            }
+
             const villageIdMatch = onclickAttr?.match(/villageId\s*:\s*(\d+)/);
             const slotIdMatch = onclickAttr?.match(/slotId\s*:\s*(\d+)/);
 
@@ -676,7 +670,9 @@ const script = async () => {
 
         const queue = [
             [
-                [20, 3]
+                [20, 3],
+                [7, 5],
+                [33, 20]
             ],
             [
                 [24, 20]
@@ -688,7 +684,13 @@ const script = async () => {
                 [4, 10]
             ],
             [
-                [17, 10]
+                [19, 20],
+                [20, 20]
+            ],
+            [
+                [17, 10],
+                [10, 20],
+                [11, 20]
             ]
         ];
 
@@ -1059,11 +1061,26 @@ const script = async () => {
     } else {
         console.log('Fully booked.')
     }
+
+    farmPlayers();
+    await adventure();
     //balanceHeroProduction();
     farmOasis(true); // temp
-    farmPlayers();
     //farmOasis(false);
-    adventure();
+
+    recruit({
+        id: 19,
+        troopId: 't1',
+        troopCount: 1,
+        timeout: 14 * 60 * 1000
+    });
+
+    recruit({
+        id: 20,
+        troopId: 't4',
+        troopCount: 1,
+        timeout: 33 * 60 * 1000
+    });
 
     const resourcePromises = villages.map(v => new Promise(async (resolve) => {
         const res = await fetch(`${window.location.origin}/api/v1/village/resources${v}`, {
@@ -1107,21 +1124,6 @@ const script = async () => {
     }, {});
 
     tradeBetweenVillages();
-
-    recruit({
-        id: 19,
-        troopId: 't1',
-        troopCount: 1,
-        timeout: 14 * 60 * 1000
-    });
-
-    recruit({
-        id: 20,
-        troopId: 't4',
-        troopCount: 1,
-        timeout: 33 * 60 * 1000
-    });
-
 
     console.log("Reloading in 60s.");
     setTimeout(() => {
