@@ -118,7 +118,7 @@ const script = async () => {
 
         const adventures = await adventuresReq.json();
 
-        if (!(adventures.data.ownPlayer.hero.adventures > 0 && adventures.data.status === 100)) {
+        if (!(adventures.data.ownPlayer.hero.adventures.length > 0 && adventures.data.ownPlayer.hero.status.status === 100)) {
             console.log('Cant send to adventure.');
             return;
         }
@@ -670,27 +670,26 @@ const script = async () => {
 
         const queue = [
             [
-                [20, 3],
-                [7, 5],
-                [33, 20]
-            ],
-            [
                 [24, 20]
-            ],
-            [
-                [1, 10],
-                [2, 10],
-                [3, 10],
-                [4, 10]
             ],
             [
                 [19, 20],
                 [20, 20]
             ],
             [
-                [17, 10],
                 [10, 20],
                 [11, 20]
+            ],
+            [
+                
+                [33, 20]
+            ],
+            [
+                [1, 10],
+                [2, 10],
+                [3, 10],
+                [4, 10],
+                [7, 5]
             ]
         ];
 
@@ -775,6 +774,7 @@ const script = async () => {
                         village: "-21|-46",
                         did: "25597",
                         fillStoragePercentage: 20,
+                        fillGranaryPercentage: 50,
                         minimumToSend: 1000
                     }
                 ]
@@ -872,7 +872,7 @@ const script = async () => {
                 }, {});
 
             const maxResourcesToReceiveA = Math.floor(receiver.fillStoragePercentage / 100 * receiverResources.storage);
-            const maxResourcesToReceiveB = Math.floor(receiver.fillStoragePercentage / 100 * receiverResources.granary);
+            const maxResourcesToReceiveB = Math.floor(receiver.fillGranaryPercentage / 100 * receiverResources.granary);
 
             const helpedMissingResources = {
                 wood: Math.max(maxResourcesToReceiveA - (receiverResources.wood + (pendingResources.lumber ?? 0)), 0),
@@ -1072,14 +1072,14 @@ const script = async () => {
         id: 19,
         troopId: 't1',
         troopCount: 1,
-        timeout: 14 * 60 * 1000
+        timeout: 8 * 60 * 1000
     });
 
     recruit({
         id: 20,
         troopId: 't4',
         troopCount: 1,
-        timeout: 33 * 60 * 1000
+        timeout: 22 * 60 * 1000
     });
 
     const resourcePromises = villages.map(v => new Promise(async (resolve) => {
