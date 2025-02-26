@@ -13,7 +13,7 @@
 
 const script = async () => {
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-    const SEND_TIME_TRIP = 1000 * 60 * 8;
+    const SEND_TIME_TRIP = 1000 * 60 * 10;
     const blockCerealWhenNotNeeded = true;
     const maxPopToFarm = 120;
     const minHeroHealth = 20;
@@ -21,6 +21,10 @@ const script = async () => {
     const playAd = false;
 
     const recruit = async (troopConfig) => {
+        if (!troopConfig.villages.find(v => v[0] === currentVillageCoords[0] && v[1] === currentVillageCoords[1])) {
+            return;
+        }
+
         const entry = buildings.find(b => b.gid === troopConfig.id);
         if (!entry) {
             console.log(`Couldn't find building entry for ${troopConfig.id}`);
@@ -52,6 +56,8 @@ const script = async () => {
             sendFormData.append(troopConfig.troopId, String(troopConfig.troopCount));
             sendFormData.append('s1', 'ok');
 
+            localStorage.setItem(key, now);
+
             await fetch(url, {
                 method: 'POST',
                 body: sendFormData,
@@ -59,11 +65,19 @@ const script = async () => {
                     'Accept': 'application/json'
                 }
             });
-            localStorage.setItem(key, now);
         }
     }
 
     const adventure = async () => {
+        const heroSearch = await fetch(`${window.location.origin}/hero/attributes`);
+        const heroTxt = await heroSearch.text();
+        const heroHP = Number(heroTxt.split('{\"health\":')[1].split(',')[0]);
+
+        if (heroHP < 5) {
+            console.log(`Hero HP too low to adventure: ${heroHP}%`);
+            return;
+        }
+
         const query = `
             query {
                 ownPlayer {
@@ -195,21 +209,39 @@ const script = async () => {
 
         const dateNow = Date.now();
 
-        const mapSearch = await fetch(`${window.location.origin}/api/v1/map/position`, {
-            method: "POST",
-            headers: {
-            "Content-Type": "application/json"
-            },
-            body: JSON.stringify({data:{
-                x: currentVillageCoords[0],
-                y: currentVillageCoords[1],
-                zoomLevel: 3
-            }})
+        const fetchMapSquare = async (x, y) => {
+            const response = await fetch(`${window.location.origin}/api/v1/map/position`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ data: { x, y, zoomLevel: 3 } })
+            });
+            return response.json();
+        };
+        
+        const centerX = currentVillageCoords[0];
+        const centerY = currentVillageCoords[1];
+
+        const promises = [];
+
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                const newX = centerX + dx * 30;
+                const newY = centerY + dy * 30;
+                promises.push(fetchMapSquare(newX, newY));
+            }
+        }
+
+        const results = await Promise.all(promises);
+
+        const uniqueTiles = new Map();
+        results.flatMap(result => result.tiles).forEach(tile => {
+            const key = `${tile.position.x},${tile.position.y}`;
+            uniqueTiles.set(key, tile);
         });
 
-        const jsonResult = await mapSearch.json();
+        const allTiles = Array.from(uniqueTiles.values());
 
-        const farms = jsonResult.tiles
+        const farms = allTiles
             .filter(k => {
                 if (!k.uid || k.uid === 1 || k.uid === 1205) {
                     return false;
@@ -234,7 +266,7 @@ const script = async () => {
             })
             .map(k => ({
                 ...k,
-                distance: Math.hypot(k.position.x - currentVillageCoords[0], k.position.y - currentVillageCoords[1])
+                distance: Math.hypot(k.position.x - centerX, k.position.y - centerY)
             }))
             .sort((a, b) => a.distance - b.distance);
 
@@ -281,7 +313,7 @@ const script = async () => {
                 const html = parser.parseFromString(htmlComponent, 'text/html');
                 const troopInfo = html.getElementById('troop_info');
                 const noLosses = (!!troopInfo.querySelector('[alt="Won as attacker without losses."]')) || troopInfo.innerText.includes('No information');
-    
+
                 const canSend = Array.from(html.querySelectorAll(".options .option .a.arrow"))
                     .some(el => el.innerText.includes("Send troops") && !el.classList.contains("disabled"));
     
@@ -353,6 +385,8 @@ const script = async () => {
                     sendFormData.append('troops[0][catapultTarget2]', '');
                     sendFormData.append('troops[0][villageId]', villageId);
 
+                    localStorage.setItem(keyBuilder(selectedFarm), dateNow);
+
                     await fetch(actionUrl, {
                         method: 'POST',
                         body: sendFormData,
@@ -361,7 +395,6 @@ const script = async () => {
                         }
                     });
 
-                    localStorage.setItem(keyBuilder(selectedFarm), dateNow);
                     console.log(`Sent attack to ${selectedFarm}`);
                 }
             } catch (error) {
@@ -528,6 +561,8 @@ const script = async () => {
                 sendFormData.append('troops[0][catapultTarget2]', '');
                 sendFormData.append('troops[0][villageId]', villageId);
 
+                localStorage.setItem(keyBuilder(selectedFarm), dateNow);
+
                 await fetch(actionUrl, {
                     method: 'POST',
                     body: sendFormData,
@@ -536,7 +571,6 @@ const script = async () => {
                     }
                 });
 
-                localStorage.setItem(keyBuilder(selectedFarm), dateNow);
                 console.log(`Sent oasis farm to ${selectedFarm}`);
             }
 
@@ -572,6 +606,8 @@ const script = async () => {
             return;
         }
 
+        localStorage.setItem('lastChangeTime', currentTime);
+
         await fetch(`${window.location.origin}/api/v1/hero/v2/attributes`, {
             method: 'POST',
             headers: {
@@ -582,8 +618,6 @@ const script = async () => {
                 attackBehaviour: "hide"
             })
         });
-
-        localStorage.setItem('lastChangeTime', currentTime);
     }
 
     const getBuildActionButton = async (gid, aid) => {
@@ -669,28 +703,30 @@ const script = async () => {
         const strictGroupOrder = false;
 
         const queue = [
-            [
-                [24, 20]
+            [ // wood
+                [1, 10]
             ],
-            [
-                [19, 20],
-                [20, 20]
-            ],
-            [
-                [10, 20],
-                [11, 20]
-            ],
-            [
-                
-                [33, 20]
-            ],
-            [
-                [1, 10],
+            [ // remaining resources
                 [2, 10],
                 [3, 10],
                 [4, 10],
                 [7, 5]
-            ]
+            ],
+            [ // storage
+                [10, 20],
+                [11, 20]
+            ],
+            [ // CP
+                [22, 20],
+                [17, 20]
+            ],
+            /*[ // recruit
+                [19, 20],
+                [20, 20]
+            ],*/
+            /*[ // wall
+                [33, 20]
+            ],*/
         ];
 
         if (queue.length === 0) {
@@ -774,7 +810,7 @@ const script = async () => {
                         village: "-21|-46",
                         did: "25597",
                         fillStoragePercentage: 20,
-                        fillGranaryPercentage: 50,
+                        fillGranaryPercentage: 30,
                         minimumToSend: 1000
                     }
                 ]
@@ -1072,14 +1108,22 @@ const script = async () => {
         id: 19,
         troopId: 't1',
         troopCount: 1,
-        timeout: 8 * 60 * 1000
+        timeout: 5 * 60 * 1000,
+        villages: [
+            [-21, -46],
+            [-24, -50]
+        ]
     });
 
     recruit({
         id: 20,
         troopId: 't4',
         troopCount: 1,
-        timeout: 22 * 60 * 1000
+        timeout: 12 * 60 * 1000,
+        villages: [
+            [-21, -46],
+            [-24, -50]
+        ]
     });
 
     const resourcePromises = villages.map(v => new Promise(async (resolve) => {
