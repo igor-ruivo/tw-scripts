@@ -730,14 +730,14 @@ const script = async () => {
                 [4, 10],
                 [7, 5]
             ],
-            [ // storage
+            /*[ // storage
                 [10, 20],
                 [11, 20]
             ],
             [ // CP
                 [22, 20],
                 [17, 20]
-            ],
+            ],*/
             /*[ // recruit
                 [19, 20],
                 [20, 20]
@@ -1122,7 +1122,7 @@ const script = async () => {
     farmOasis(true); // temp
     //farmOasis(false);
 
-    recruit({
+    /*recruit({
         id: 19,
         troopId: 't1',
         troopCount: 1,
@@ -1131,7 +1131,7 @@ const script = async () => {
             [-21, -46],
             [-24, -50]
         ]
-    });
+    });*/
 
     recruit({
         id: 20,
