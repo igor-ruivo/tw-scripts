@@ -207,6 +207,8 @@ const script = async () => {
             return;
         }
 
+        let remainingTroops = horseCount;
+
         const dateNow = Date.now();
 
         const fetchMapSquare = async (x, y) => {
@@ -273,6 +275,11 @@ const script = async () => {
         let selectedFarm = null;
 
         for (let i = 0; i < farms.length; i++) {
+            if (remainingTroops < 1) {
+                console.log('No more troops available.');
+                return;
+            }
+
             const farm = farms[i];
     
             try {
@@ -288,18 +295,22 @@ const script = async () => {
                 const isBlacklisted = blackList.some(item => item[0] === farmCoords[0] && item[1] === farmCoords[1]);
 
                 if (isBlacklisted) {
-                    console.log(`Farm at ${farmCoords} is blacklisted.`);
                     continue;
                 }
 
-                const pop = await fetchPlayerPop(farm.uid);
-                if (pop > maxPopToFarm) {
-                    console.log(`Population too high: ${farmCoords}`);
-                    blackList.push(farmCoords);
-                    localStorage.setItem('blacklist', JSON.stringify(blackList));
-                    continue;
+                const lastTimeCheckedPlayerPop = localStorage.getItem(`pop${farm.uid}pop`);
+
+                if (!(lastTimeCheckedPlayerPop && Date.now() < lastTimeCheckedPlayerPop + 24 * 1000 * 60 * 60)) {
+                    const pop = await fetchPlayerPop(farm.uid);
+                    localStorage.setItem(`pop${farm.uid}pop`, Date.now());
+                    
+                    if (pop > maxPopToFarm) {
+                        blackList.push(farmCoords);
+                        localStorage.setItem('blacklist', JSON.stringify(blackList));
+                        continue;
+                    }
                 }
-    
+                
                 const reports = await fetch(`${window.location.origin}/api/v1/map/tile-details`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -345,6 +356,10 @@ const script = async () => {
 
                     const script = document.getElementById('confirmSendTroops_script');
                     if (!script) {
+                        console.log(`No script! ${farm.position.x}|${farm.position.y} - Troops available: ${remainingTroops}`);
+                        if (remainingTroops < 3) {
+                            return;
+                        }
                         continue;
                     }
 
@@ -387,6 +402,7 @@ const script = async () => {
 
                     localStorage.setItem(keyBuilder(selectedFarm), dateNow);
 
+                    remainingTroops--;
                     await fetch(actionUrl, {
                         method: 'POST',
                         body: sendFormData,
@@ -396,6 +412,8 @@ const script = async () => {
                     });
 
                     console.log(`Sent attack to ${selectedFarm}`);
+                } else {
+                    console.log(`Losses or can't send! ${farm.position.x}|${farm.position.y}`);
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -1069,7 +1087,7 @@ const script = async () => {
     } else {
         if (nextTick < Date.now()) {
             localStorage.setItem('nextTick', Date.now() + 60 * 1000);
-            window.location.href = `${window.location.origin}/dorf1.php${villages[(currentVillageIndex + 1) % villages.length]}`;
+            window.location.href = `${window.location.origin}/dorf2.php${villages[(currentVillageIndex + 1) % villages.length]}`;
         }
     }
 
