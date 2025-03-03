@@ -14,9 +14,9 @@
 const script = async () => {
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
     const SEND_TIME_TRIP = 1000 * 60 * 10;
-    const blockCerealWhenNotNeeded = true;
+    const blockCerealWhenNotNeeded = false;
     const maxPopToFarm = 120;
-    const minHeroHealth = 20;
+    const minHeroHealth = 10;
     const maxAnimalCount = 30;
     const playAd = false;
 
@@ -721,14 +721,24 @@ const script = async () => {
         const strictGroupOrder = false;
 
         const queue = [
-            [ // wood
-                [1, 10]
+            [
+                [15, 20]
             ],
+            [
+                [10, 10],
+                [11, 10]
+            ],
+            [
+                [2, 10]
+            ],
+            /*[ // wood
+                [1, 10]
+            ],*/
             [ // remaining resources
-                [2, 10],
-                [3, 10],
-                [4, 10],
-                [7, 5]
+                /*[2, 10],
+                [3, 10],*/
+                [8, 5],
+                [4, 10]
             ],
             /*[ // storage
                 [10, 20],
@@ -827,9 +837,16 @@ const script = async () => {
                     {
                         village: "-21|-46",
                         did: "25597",
-                        fillStoragePercentage: 20,
-                        fillGranaryPercentage: 30,
+                        fillStoragePercentage: 33,
+                        fillGranaryPercentage: 33,
                         minimumToSend: 1000
+                    },
+                    {
+                        village: "-21|-47",
+                        did: "27261",
+                        fillStoragePercentage: 80,
+                        fillGranaryPercentage: 50,
+                        minimumToSend: 300
                     }
                 ]
             }
@@ -1122,25 +1139,25 @@ const script = async () => {
     farmOasis(true); // temp
     //farmOasis(false);
 
-    /*recruit({
+    recruit({
         id: 19,
         troopId: 't1',
         troopCount: 1,
-        timeout: 5 * 60 * 1000,
+        timeout: 4 * 60 * 1000,
         villages: [
             [-21, -46],
             [-24, -50]
         ]
-    });*/
+    });
 
     recruit({
         id: 20,
         troopId: 't4',
         troopCount: 1,
-        timeout: 12 * 60 * 1000,
+        timeout: 10 * 60 * 1000,
         villages: [
             [-21, -46],
-            [-24, -50]
+            //[-24, -50]
         ]
     });
 
