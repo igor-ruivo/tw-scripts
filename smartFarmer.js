@@ -10,9 +10,17 @@
 // @grant               GM_getValue
 // @grant               unsafeWindow
 // ==/UserScript==
+let pending = true;
+window.addEventListener("beforeunload", (event) => {
+    if (pending) {
+        event.preventDefault(); 
+    }
+});
+
 const script = async () => {
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
     const SEND_TIME_TRIP = 1000 * 60 * 10;
+    const TIME_IN_EACH_VILLAGE = 20 * 1000;
 
     const recruit = async (troopConfig) => {
         if (!troopConfig.villages.find(v => v[0] === currentVillageCoords.x && v[1] === currentVillageCoords.y)) {
@@ -108,7 +116,7 @@ const script = async () => {
         }
     }
 
-    const farmPlayers = async () => {
+    const farmBarbarianVillages = async () => {
         const villages = await getBarbarianVillages();
 
         const sortedVillages = villages.sort((a, b) => {
@@ -161,7 +169,6 @@ const script = async () => {
                     const sleepMs = Math.max(0, 200 - ellapsedTime);
 
                     if (sleepMs > 0) {
-                        console.log(`sleeping for ${sleepMs} ms`)
                         await sleep(sleepMs);
                     }
                 }
@@ -199,31 +206,34 @@ const script = async () => {
 
     const nextTick = localStorage.getItem('nextTick');
     if (!nextTick) {
-        localStorage.setItem('nextTick', Date.now() + 60 * 1000);
+        localStorage.setItem('nextTick', Date.now() + TIME_IN_EACH_VILLAGE);
     } else {
         if (nextTick < Date.now()) {
-            localStorage.setItem('nextTick', Date.now() + 60 * 1000);
+            localStorage.setItem('nextTick', Date.now() + TIME_IN_EACH_VILLAGE);
             const nextVillageButton = document.getElementById("village_switch_right");
             nextVillageButton && nextVillageButton.click();
         }
     }
 
-    farmPlayers();
-    recruit({
-        troopId: 'light',
-        buildingId: 'stable',
-        troopCount: 1,
-        timeout: 3 * 60 * 1000,
-        villages: [
-            [414, 498],
-            [413, 501]
-        ]
-    });
+    await Promise.all([
+        farmBarbarianVillages(),
+        recruit({
+            troopId: 'light',
+            buildingId: 'stable',
+            troopCount: 1,
+            timeout: 3 * 60 * 1000,
+            villages: [
+                [414, 498],
+                [413, 501]
+            ]
+        })
+    ]);
 
-    console.log("Reloading in 60s.");
+    pending = false;
+    console.log(`Reloading in ${TIME_IN_EACH_VILLAGE / 1000}s.`);
     setTimeout(() => {
         window.location.reload(true);
-    }, 1000 * 60);
+    }, TIME_IN_EACH_VILLAGE);
 }
 
 const currentVillage = TribalWars.getGameData().village.id;

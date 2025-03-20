@@ -11,9 +11,17 @@
 // @grant               unsafeWindow
 // ==/UserScript==
 
+let pending = true;
+window.addEventListener("beforeunload", (event) => {
+    if (pending) {
+        event.preventDefault();
+    }
+});
+
 const script = async () => {
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
     const SEND_TIME_TRIP = 1000 * 60 * 10;
+    const TIME_IN_EACH_VILLAGE = 20 * 1000;
     const blockCerealWhenNotNeeded = true;
     const maxPopToFarm = 50;
     const minHeroHealth = 40;
@@ -285,7 +293,9 @@ const script = async () => {
             try {
                 const lastFarm = localStorage.getItem(keyBuilder([farm.position.x, farm.position.y]));
 
-                if (lastFarm && (dateNow - lastFarm) < SEND_TIME_TRIP) {
+                const expectedArrivalTime = dateNow + Math.round(3600 / 56 * farm.distance) * 1000;
+
+                if (lastFarm && (expectedArrivalTime - lastFarm) < SEND_TIME_TRIP) {
                     continue;
                 }
 
@@ -400,7 +410,7 @@ const script = async () => {
                     sendFormData.append('troops[0][catapultTarget2]', '');
                     sendFormData.append('troops[0][villageId]', villageId);
 
-                    localStorage.setItem(keyBuilder(selectedFarm), dateNow);
+                    localStorage.setItem(keyBuilder(selectedFarm), expectedArrivalTime);
 
                     remainingTroops--;
                     await fetch(actionUrl, {
@@ -722,8 +732,7 @@ const script = async () => {
 
         const queue = [
             [
-                [15, 10],
-                [22, 10]
+                [24, 10]
             ],
             [
                 [15, 20]
@@ -1081,10 +1090,10 @@ const script = async () => {
 
     const nextTick = localStorage.getItem('nextTick');
     if (!nextTick) {
-        localStorage.setItem('nextTick', Date.now() + 60 * 1000);
+        localStorage.setItem('nextTick', Date.now() + TIME_IN_EACH_VILLAGE);
     } else {
         if (nextTick < Date.now()) {
-            localStorage.setItem('nextTick', Date.now() + 60 * 1000);
+            localStorage.setItem('nextTick', Date.now() + TIME_IN_EACH_VILLAGE);
             window.location.href = `${window.location.origin}/dorf2.php${villages[(currentVillageIndex + 1) % villages.length]}`;
         }
     }
@@ -1109,36 +1118,37 @@ const script = async () => {
 
     if (queued < 3) {
         await upgradeBuilds();
-        upgradeStorageIfNeeded();
+        await upgradeStorageIfNeeded();
     } else {
         console.log('Fully booked.')
     }
 
-    //farmPlayers();
-    await adventure();
-    //balanceHeroProduction();
-    farmOasis(true);
-    //farmOasis(false);
-/*
-    recruit({
-        id: 19,
-        troopId: 't1',
-        troopCount: 1,
-        timeout: 4 * 60 * 1000,
-        villages: [
-            [-13, 87]
-        ]
-    });*/
-
-    /*recruit({
-        id: 20,
-        troopId: 't5',
-        troopCount: 1,
-        timeout: 2 * 60 * 1000 + 30 * 1000,
-        villages: [
-            [-13, 87]
-        ]
-    });*/
+    await Promise.all([
+        //farmPlayers(),
+        adventure(),
+        //balanceHeroProduction(),
+        farmOasis(true),
+        //farmOasis(false),
+        /*recruit({
+            id: 19,
+            troopId: 't1',
+            troopCount: 1,
+            timeout: 4 * 60 * 1000,
+            villages: [
+                [-13, 87]
+            ]
+        }),
+        recruit({
+            id: 20,
+            troopId: 't5',
+            troopCount: 1,
+            timeout: 2 * 60 * 1000 + 30 * 1000,
+            villages: [
+                [-13, 87]
+            ]
+        }),*/
+    ]);
+    
 
     const resourcePromises = villages.map(v => new Promise(async (resolve) => {
         const res = await fetch(`${window.location.origin}/api/v1/village/resources${v}`, {
@@ -1181,12 +1191,13 @@ const script = async () => {
         return acc;
     }, {});
 
-    tradeBetweenVillages();
+    await tradeBetweenVillages();
 
-    console.log("Reloading in 60s.");
+    pending = false;
+    console.log(`Reloading in ${TIME_IN_EACH_VILLAGE / 1000}s.`);
     setTimeout(() => {
         window.location.reload(true);
-    }, 1000 * 60);
+    }, TIME_IN_EACH_VILLAGE);
 }
 
 script();
