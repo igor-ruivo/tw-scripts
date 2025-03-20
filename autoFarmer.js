@@ -20,7 +20,12 @@ const alwaysTrySendAttackWhenNotAlreadyAttacking = false;
 
 const farmVillages = [
    {
-      coordinates: "600|473",
+      coordinates: "414|498",
+      A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0 },
+      B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0 }
+   },
+    {
+      coordinates: "413|501",
       A: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0 },
       B: { spear: 0, sword: 0, axe: 0, archer: 0, spy: 0, light: 1, marcher: 0, heavy: 0, knight: 0 }
    }
@@ -251,15 +256,15 @@ function indexCoords(coords) {
 
 function getSlowestTroopTime(userSetting) {
    const troopsSpeed = {
-      spear: 18 * 60 / 5,
-      sword: 22 * 60 / 5,
-      axe: 18 * 60 / 5,
-      archer: 18 * 60 / 5,
-      spy: 9 * 60 / 5,
-      light: 10 * 60 / 5,
-      marcher: 10 * 60 / 5,
-      heavy: 11 * 60 / 5,
-      knight: 10 * 60 / 5
+      spear: 18 * 60 / 2,
+      sword: 22 * 60 / 2,
+      axe: 18 * 60 / 2,
+      archer: 18 * 60 / 2,
+      spy: 9 * 60 / 2,
+      light: 10 * 60 / 2,
+      marcher: 10 * 60 / 2,
+      heavy: 11 * 60 / 2,
+      knight: 10 * 60 / 2
    };
 
    Object.keys(troopsSpeed).forEach(e => {

@@ -22,6 +22,7 @@
    
    console.log("Reloading in 60s.");
    setTimeout(() => {
-      window.location.reload(true);
+      const nextVillageButton = document.getElementById("village_switch_right");
+		nextVillageButton ? nextVillageButton.click() : window.location.reload(true);
    }, 1000 * 60);
 })();

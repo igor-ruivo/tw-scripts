@@ -19,18 +19,18 @@ const template = {
 };
 
 const troopsSpeed = {
-   spear: 18 * 60,
-   sword: 22 * 60,
-   axe: 18 * 60,
-   archer: 18 * 60,
-   spy: 9 * 60,
-   light: 10 * 60,
-   marcher: 10 * 60,
-   heavy: 11 * 60,
-   ram: 30 * 60,
-   catapult: 30 * 60,
-   knight: 10 * 60,
-   snob: 35 * 60
+   spear: 18 * 60 / 2,
+   sword: 22 * 60 / 2,
+   axe: 18 * 60 / 2,
+   archer: 18 * 60 / 2,
+   spy: 9 * 60 / 2,
+   light: 10 * 60 / 2,
+   marcher: 10 * 60 / 2,
+   heavy: 11 * 60 / 2,
+   ram: 30 * 60 / 2,
+   catapult: 30 * 60 / 2,
+   knight: 10 * 60 / 2,
+   snob: 35 * 60 / 2
 };
 
 const waitTimeForDistanceTooltipToAppear = 5000;

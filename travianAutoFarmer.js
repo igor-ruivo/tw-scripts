@@ -14,10 +14,10 @@
 const script = async () => {
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
     const SEND_TIME_TRIP = 1000 * 60 * 10;
-    const blockCerealWhenNotNeeded = false;
-    const maxPopToFarm = 120;
-    const minHeroHealth = 10;
-    const maxAnimalCount = 30;
+    const blockCerealWhenNotNeeded = true;
+    const maxPopToFarm = 50;
+    const minHeroHealth = 40;
+    const maxAnimalCount = 12;
     const playAd = false;
 
     const recruit = async (troopConfig) => {
@@ -73,7 +73,7 @@ const script = async () => {
         const heroTxt = await heroSearch.text();
         const heroHP = Number(heroTxt.split('{\"health\":')[1].split(',')[0]);
 
-        if (heroHP < 5) {
+        if (heroHP < 30) {
             console.log(`Hero HP too low to adventure: ${heroHP}%`);
             return;
         }
@@ -200,7 +200,7 @@ const script = async () => {
 
         const villageParser = new DOMParser();
         const villageDoc = villageParser.parseFromString(villageText, 'text/html');
-        const horseCount = Number(Array.from(villageDoc.getElementById('troops').querySelectorAll("tbody tr")).find(row => row.querySelector(".un")?.textContent.trim().startsWith("Theutates Thunder"))?.querySelector(".num")?.textContent.trim() ?? '0');
+        const horseCount = Number(Array.from(villageDoc.getElementById('troops').querySelectorAll("tbody tr")).find(row => row.querySelector(".un")?.textContent.trim().startsWith("Equites Impera"))?.querySelector(".num")?.textContent.trim() ?? '0');
 
         if (horseTroopCount > horseCount) {
             console.log('Wont try to send attack. Not enough troops');
@@ -334,7 +334,7 @@ const script = async () => {
                     const url = `${window.location.origin}/build.php?gid=16&tt=2`;
 
                     const formData = new URLSearchParams();
-                    formData.append('troop[t4]', horseTroopCount);
+                    formData.append('troop[t5]', horseTroopCount);
                     formData.append('troop[t11]', '');
                     formData.append('villagename', '');
                     formData.append('x', selectedFarm[0]);
@@ -364,7 +364,7 @@ const script = async () => {
                     }
 
                     const actualTroopsBeingSent = document.getElementById('troopSendForm');
-                    if (Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t4]"')[0].value) !== horseTroopCount) {
+                    if (Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t5]"')[0].value) !== horseTroopCount) {
                         console.log('Not enough troops to attack player.');
                         return;
                     }
@@ -387,8 +387,8 @@ const script = async () => {
                     sendFormData.append('troops[0][t1]', '0');
                     sendFormData.append('troops[0][t2]', '0');
                     sendFormData.append('troops[0][t3]', '0');
-                    sendFormData.append('troops[0][t4]', horseTroopCount);
-                    sendFormData.append('troops[0][t5]', '0');
+                    sendFormData.append('troops[0][t4]', '0');
+                    sendFormData.append('troops[0][t5]', horseTroopCount);
                     sendFormData.append('troops[0][t6]', '0');
                     sendFormData.append('troops[0][t7]', '0');
                     sendFormData.append('troops[0][t8]', '0');
@@ -435,8 +435,8 @@ const script = async () => {
         const villageDoc = villageParser.parseFromString(villageText, 'text/html');
 
         const heroIsInVillage = villageDoc.getElementById('troops').getElementsByClassName('uhero').length > 0;
-        const troopCount = Number(Array.from(villageDoc.getElementById('troops').querySelectorAll("tbody tr")).find(row => row.querySelector(".un")?.textContent.trim().startsWith("Phalanx"))?.querySelector(".num")?.textContent.trim() ?? '0');
-        const horseCount = Number(Array.from(villageDoc.getElementById('troops').querySelectorAll("tbody tr")).find(row => row.querySelector(".un")?.textContent.trim().startsWith("Theutates Thunder"))?.querySelector(".num")?.textContent.trim() ?? '0');
+        const troopCount = Number(Array.from(villageDoc.getElementById('troops').querySelectorAll("tbody tr")).find(row => row.querySelector(".un")?.textContent.trim().startsWith("Legio"))?.querySelector(".num")?.textContent.trim() ?? '0');
+        const horseCount = Number(Array.from(villageDoc.getElementById('troops').querySelectorAll("tbody tr")).find(row => row.querySelector(".un")?.textContent.trim().startsWith("Equites Impera"))?.querySelector(".num")?.textContent.trim() ?? '0');
 
         const useHorses = horseTroopCount <= horseCount;
 
@@ -516,7 +516,7 @@ const script = async () => {
                     formData.append('troop[t1]', !animals ? farmTroopCount : '');
                 }
                 if (useHorses) {
-                    formData.append('troop[t4]', !animals ? horseTroopCount : '');
+                    formData.append('troop[t5]', !animals ? horseTroopCount : '');
                 }
                 formData.append('troop[t11]', animals ? 1 : '');
                 formData.append('villagename', '');
@@ -543,7 +543,7 @@ const script = async () => {
                 }
 
                 const actualTroopsBeingSent = document.getElementById('troopSendForm');
-                if ((!animals && (useHorses && Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t4]"')[0].value) !== horseTroopCount || !useHorses && Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t1]"')[0].value) !== farmTroopCount)) || (animals && Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t11]"')[0].value) !== 1)) {
+                if ((!animals && (useHorses && Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t5]"')[0].value) !== horseTroopCount || !useHorses && Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t1]"')[0].value) !== farmTroopCount)) || (animals && Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t11]"')[0].value) !== 1)) {
                     console.log('Not enough troops.');
                     return;
                 }
@@ -566,8 +566,8 @@ const script = async () => {
                 sendFormData.append('troops[0][t1]', (!useHorses && !animals) ? farmTroopCount : '0');
                 sendFormData.append('troops[0][t2]', '0');
                 sendFormData.append('troops[0][t3]', '0');
-                sendFormData.append('troops[0][t4]', (useHorses && !animals) ? horseTroopCount : '0');
-                sendFormData.append('troops[0][t5]', '0');
+                sendFormData.append('troops[0][t4]', '0');
+                sendFormData.append('troops[0][t5]', (useHorses && !animals) ? horseTroopCount : '0');
                 sendFormData.append('troops[0][t6]', '0');
                 sendFormData.append('troops[0][t7]', '0');
                 sendFormData.append('troops[0][t8]', '0');
@@ -722,39 +722,20 @@ const script = async () => {
 
         const queue = [
             [
+                [15, 10],
+                [22, 10]
+            ],
+            [
                 [15, 20]
             ],
             [
-                [10, 10],
-                [11, 10]
+                [1, 10],
+                [2, 10],
+                [3, 10]
             ],
             [
-                [2, 10]
-            ],
-            /*[ // wood
-                [1, 10]
-            ],*/
-            [ // remaining resources
-                /*[2, 10],
-                [3, 10],*/
-                [8, 5],
                 [4, 10]
-            ],
-            /*[ // storage
-                [10, 20],
-                [11, 20]
-            ],
-            [ // CP
-                [22, 20],
-                [17, 20]
-            ],*/
-            /*[ // recruit
-                [19, 20],
-                [20, 20]
-            ],*/
-            /*[ // wall
-                [33, 20]
-            ],*/
+            ]
         ];
 
         if (queue.length === 0) {
@@ -1126,40 +1107,38 @@ const script = async () => {
             level: Number(e.getElementsByClassName('labelLayer')[0]?.innerText || '0') + Number(e.classList.contains('underConstruction') ? 1 : 0)
         }))).flat();
 
-    if (queued < 1) {
+    if (queued < 3) {
         await upgradeBuilds();
         upgradeStorageIfNeeded();
     } else {
         console.log('Fully booked.')
     }
 
-    farmPlayers();
+    //farmPlayers();
     await adventure();
     //balanceHeroProduction();
-    farmOasis(true); // temp
+    farmOasis(true);
     //farmOasis(false);
-
+/*
     recruit({
         id: 19,
         troopId: 't1',
         troopCount: 1,
         timeout: 4 * 60 * 1000,
         villages: [
-            [-21, -46],
-            [-24, -50]
+            [-13, 87]
         ]
-    });
+    });*/
 
-    recruit({
+    /*recruit({
         id: 20,
-        troopId: 't4',
+        troopId: 't5',
         troopCount: 1,
-        timeout: 10 * 60 * 1000,
+        timeout: 2 * 60 * 1000 + 30 * 1000,
         villages: [
-            [-21, -46],
-            //[-24, -50]
+            [-13, 87]
         ]
-    });
+    });*/
 
     const resourcePromises = villages.map(v => new Promise(async (resolve) => {
         const res = await fetch(`${window.location.origin}/api/v1/village/resources${v}`, {
