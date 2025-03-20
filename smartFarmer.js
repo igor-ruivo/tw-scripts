@@ -135,7 +135,7 @@ const script = async () => {
             try {
                 const lastFarm = localStorage.getItem(keyBuilder([farm.x, farm.y]));
 
-                const expectedArrivalTime = dateNow + Math.round(lightSpeed * calculateDistance(farm.x, farm.y));
+                const expectedArrivalTime = dateNow + Math.round(lightSpeed * calculateDistance(farm.x, farm.y)) * 1000;
 
                 if (lastFarm && (expectedArrivalTime - lastFarm) < SEND_TIME_TRIP) {
                     continue;
@@ -168,6 +168,7 @@ const script = async () => {
 
                 lastIterationStartTime = performance.now();
 
+                localStorage.setItem(keyBuilder(selectedFarm), expectedArrivalTime);
                 const result = await fetch(url);
                 needsRateLimit = true;
 
@@ -188,8 +189,6 @@ const script = async () => {
                         return;
                     }
                 }
-
-                localStorage.setItem(keyBuilder(selectedFarm), expectedArrivalTime);
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
@@ -230,7 +229,7 @@ const script = async () => {
 const currentVillage = TribalWars.getGameData().village.id;
 
 if (window.VillageOverview) {
-    const lightSpeed = 1/(window.VillageOverview.units[1].light.speed);
+    const lightSpeed = 1 / (window.VillageOverview.units[1].light.speed);
     localStorage.setItem('lightSpeed', lightSpeed);
 }
 
