@@ -10,6 +10,7 @@
 // @grant               GM_getValue
 // @grant               unsafeWindow
 // ==/UserScript==
+
 let pending = true;
 window.addEventListener("beforeunload", (event) => {
     if (pending) {

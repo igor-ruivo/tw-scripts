@@ -844,7 +844,8 @@ const script = async () => {
 
         const queue = [
             [
-                [11, 9]
+                [10, 10],
+                [11, 10]
             ],
             [
                 [24, 10]
@@ -856,9 +857,6 @@ const script = async () => {
                 [1, 10],
                 [2, 10],
                 [3, 10]
-            ],
-            [
-                [4, 6]
             ]
         ];
 
@@ -1249,15 +1247,15 @@ const script = async () => {
         //balanceHeroProduction(),
         farmOasis(true),
         //farmOasis(false),
-        /*recruit({
+        recruit({
             id: 19,
-            troopId: 't1',
+            troopId: 't3',
             troopCount: 1,
-            timeout: 4 * 60 * 1000,
+            timeout: 2 * 60 * 1000 + 30 * 1000,
             villages: [
                 [-13, 87]
             ]
-        }),*/
+        }),
         recruit({
             id: 20,
             troopId: 't5',
