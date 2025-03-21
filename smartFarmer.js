@@ -177,7 +177,6 @@ const script = async () => {
                 lastIterationStartTime = performance.now();
 
                 const result = await fetch(url);
-                localStorage.setItem(keyBuilder(selectedFarm), expectedArrivalTime);
                 needsRateLimit = true;
 
                 const json = await result.json();
@@ -189,6 +188,7 @@ const script = async () => {
 
                 if (json.success) {
                     console.log(json.success);
+                    localStorage.setItem(keyBuilder(selectedFarm), expectedArrivalTime);
                 }
 
                 if (json.current_units) {
