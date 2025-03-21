@@ -24,8 +24,8 @@ const script = async () => {
     const TIME_IN_EACH_VILLAGE = 20 * 1000;
     const blockCerealWhenNotNeeded = true;
     const maxPopToFarm = 50;
-    const minHeroHealth = 40;
-    const maxAnimalCount = 12;
+    const minHeroHealth = 30;
+    const maxAnimalCount = 20;
     const playAd = false;
 
     const recruit = async (troopConfig) => {
@@ -181,6 +181,94 @@ const script = async () => {
                 ]
             })
         });
+    }
+
+    const collectResources = async () => {
+        const query = `
+            query {
+                ownPlayer {
+                hero {
+                    inventory {
+                    id
+                    amount
+                    }
+                }
+                }
+            }
+        `;
+
+        const response = await fetch(`${window.location.origin}/api/v1/graphql`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                query: query,
+            }),
+        });
+
+        const data = await response.json();
+        const inventory = data.data.ownPlayer.hero.inventory;
+
+        const wood = inventory.find(i => i.id === 217844);
+        const stone = inventory.find(i => i.id === 164808);
+        const iron = inventory.find(i => i.id === 116548);
+        const cereal = inventory.find(i => i.id === 217845);
+
+        const currentWood = Number(document.getElementById('l1').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
+        const currentClay = Number(document.getElementById('l2').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
+        const currentIron = Number(document.getElementById('l3').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
+        const currentCereal = Number(document.getElementById('l4').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
+
+        const currentWarehouse = Number(document.getElementsByClassName('capacity')[0].innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
+        const currentGranary = Number(document.getElementsByClassName('capacity')[1].innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
+
+        const missingWood = !wood ? 0 : Math.min(wood.amount, Math.max(0, currentWarehouse * 0.75 - currentWood));
+        const missingClay = !stone ? 0 : Math.min(stone.amount, Math.max(0, currentWarehouse * 0.75 - currentClay));
+        const missingIron = !iron ? 0 : Math.min(iron.amount, Math.max(0, currentWarehouse * 0.75 - currentIron));
+        const missingCereal = !cereal ? 0 : Math.min(cereal.amount, Math.max(0, currentGranary * 0.75 - currentCereal));
+
+        const resources = [
+            { id: 217844, amount: missingWood },
+            { id: 164808, amount: missingClay },
+            { id: 116548, amount: missingIron },
+            { id: 217845, amount: missingCereal }
+        ];
+
+        const resourcesToUse = resources.filter(resource => resource.amount > 0);
+
+        const promises = resourcesToUse.map(async (resource) => {
+            const nonceCall = await fetch(`${window.location.origin}/api/v1/hero/v2/inventory/use-item`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    "action": "inventory",
+                    "itemId": resource.id,
+                    "amount": resource.amount,
+                    "villageId": +currentVillageId
+                }),
+            });
+        
+            const nonce = nonceCall.headers.get("x-nonce");
+        
+            await fetch(`${window.location.origin}/api/v1/hero/v2/inventory/use-item`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-nonce": nonce
+                },
+                body: JSON.stringify({
+                    "action": "inventory",
+                    "itemId": resource.id,
+                    "amount": resource.amount,
+                    "villageId": +currentVillageId
+                }),
+            });
+        });
+        
+        await Promise.all(promises);
     }
 
     const fetchPlayerPop = async (uid) => {
@@ -1086,6 +1174,9 @@ const script = async () => {
     const activeVillageHref = activeVillage.querySelector('a').getAttribute('href');
     const currentVillageIndex = villages.indexOf(activeVillageHref);
 
+    const urlParams = new URLSearchParams(activeVillageHref);
+    const currentVillageId = urlParams.get('newdid');
+
     const currentVillageCoords = [parseInt(activeVillage.getElementsByClassName('coordinateX')[0].innerText.normalize("NFKC").replace(/[\u2212\u2010-\u2015]/g, '-').replaceAll(/[^\d.,-]/g, '').replaceAll('(', ''), 10), parseInt(activeVillage.getElementsByClassName('coordinateY')[0].innerText.normalize("NFKC").replace(/[\u2212\u2010-\u2015]/g, '-').replaceAll(/[^\d.,-]/g, '').replaceAll(')', ''), 10)];
 
     const nextTick = localStorage.getItem('nextTick');
@@ -1115,6 +1206,8 @@ const script = async () => {
             id: Number(e.parentElement.getAttribute('data-aid') ?? e.getAttribute('data-aid')),
             level: Number(e.getElementsByClassName('labelLayer')[0]?.innerText || '0') + Number(e.classList.contains('underConstruction') ? 1 : 0)
         }))).flat();
+
+    await collectResources();
 
     if (queued < 3) {
         await upgradeBuilds();
