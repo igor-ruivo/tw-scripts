@@ -22,7 +22,7 @@ const script = async () => {
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
     const SEND_TIME_TRIP = 1000 * 60 * 10;
     const TIME_IN_EACH_VILLAGE = 20 * 1000;
-    const blockCerealWhenNotNeeded = true;
+    const blockCerealWhenNotNeeded = false;
     const maxPopToFarm = 50;
     const minHeroHealth = 30;
     const maxAnimalCount = 20;
@@ -191,6 +191,7 @@ const script = async () => {
                     inventory {
                     id
                     amount
+                    typeId
                     }
                 }
                 }
@@ -210,10 +211,10 @@ const script = async () => {
         const data = await response.json();
         const inventory = data.data.ownPlayer.hero.inventory;
 
-        const wood = inventory.find(i => i.id === 217844);
-        const stone = inventory.find(i => i.id === 164808);
-        const iron = inventory.find(i => i.id === 116548);
-        const cereal = inventory.find(i => i.id === 217845);
+        const wood = inventory.find(i => i.typeId === 145);
+        const stone = inventory.find(i => i.typeId === 146);
+        const iron = inventory.find(i => i.typeId === 147);
+        const cereal = inventory.find(i => i.typeId === 148);
 
         const currentWood = Number(document.getElementById('l1').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
         const currentClay = Number(document.getElementById('l2').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
@@ -223,17 +224,40 @@ const script = async () => {
         const currentWarehouse = Number(document.getElementsByClassName('capacity')[0].innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
         const currentGranary = Number(document.getElementsByClassName('capacity')[1].innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
 
-        const missingWood = !wood ? 0 : Math.min(wood.amount, Math.max(0, currentWarehouse * 0.75 - currentWood));
-        const missingClay = !stone ? 0 : Math.min(stone.amount, Math.max(0, currentWarehouse * 0.75 - currentClay));
-        const missingIron = !iron ? 0 : Math.min(iron.amount, Math.max(0, currentWarehouse * 0.75 - currentIron));
-        const missingCereal = !cereal ? 0 : Math.min(cereal.amount, Math.max(0, currentGranary * 0.75 - currentCereal));
+        const missingWood = !wood ? 0 : Math.min(wood.amount, Math.max(0, currentWarehouse * 0.5 - currentWood));
+        const missingClay = !stone ? 0 : Math.min(stone.amount, Math.max(0, currentWarehouse * 0.5 - currentClay));
+        const missingIron = !iron ? 0 : Math.min(iron.amount, Math.max(0, currentWarehouse * 0.5 - currentIron));
+        const missingCereal = !cereal ? 0 : Math.min(cereal.amount, Math.max(0, currentGranary * 0.5 - currentCereal));
 
-        const resources = [
-            { id: 217844, amount: missingWood },
-            { id: 164808, amount: missingClay },
-            { id: 116548, amount: missingIron },
-            { id: 217845, amount: missingCereal }
-        ];
+        const resources = [];
+
+        if (wood) {
+            resources.push({
+                id: wood.id,
+                amount: missingWood
+            })
+        }
+
+        if (stone) {
+            resources.push({
+                id: stone.id,
+                amount: missingClay
+            })
+        }
+
+        if (iron) {
+            resources.push({
+                id: iron.id,
+                amount: missingIron
+            })
+        }
+
+        if (cereal) {
+            resources.push({
+                id: cereal.id,
+                amount: missingCereal
+            })
+        }
 
         const resourcesToUse = resources.filter(resource => resource.amount > 0);
 
@@ -820,6 +844,9 @@ const script = async () => {
 
         const queue = [
             [
+                [11, 9]
+            ],
+            [
                 [24, 10]
             ],
             [
@@ -831,7 +858,7 @@ const script = async () => {
                 [3, 10]
             ],
             [
-                [4, 10]
+                [4, 6]
             ]
         ];
 
@@ -1209,7 +1236,7 @@ const script = async () => {
 
     await collectResources();
 
-    if (queued < 3) {
+    if (queued < 2) {
         await upgradeBuilds();
         await upgradeStorageIfNeeded();
     } else {
@@ -1217,7 +1244,7 @@ const script = async () => {
     }
 
     await Promise.all([
-        //farmPlayers(),
+        farmPlayers(),
         adventure(),
         //balanceHeroProduction(),
         farmOasis(true),
@@ -1230,7 +1257,7 @@ const script = async () => {
             villages: [
                 [-13, 87]
             ]
-        }),
+        }),*/
         recruit({
             id: 20,
             troopId: 't5',
@@ -1239,7 +1266,7 @@ const script = async () => {
             villages: [
                 [-13, 87]
             ]
-        }),*/
+        }),
     ]);
     
 

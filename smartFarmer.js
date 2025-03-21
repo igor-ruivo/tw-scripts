@@ -42,8 +42,8 @@ const script = async () => {
                 body: formData
             });
 
-            localStorage.setItem(key, now);
             const json = await response.json();
+            localStorage.setItem(key, now);
 
             if (json.msg) {
                 console.log(json.msg);
@@ -175,8 +175,8 @@ const script = async () => {
 
                 lastIterationStartTime = performance.now();
 
-                localStorage.setItem(keyBuilder(selectedFarm), expectedArrivalTime);
                 const result = await fetch(url);
+                localStorage.setItem(keyBuilder(selectedFarm), expectedArrivalTime);
                 needsRateLimit = true;
 
                 const json = await result.json();
