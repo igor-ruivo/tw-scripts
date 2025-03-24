@@ -157,6 +157,7 @@ const script = async () => {
         let needsRateLimit = false;
 
         const lightSpeed = localStorage.getItem('lightSpeed') || 300;
+        const spearSpeed = localStorage.getItem('spearSpeed') || 300;
 
         for (let i = 0; i < sortedVillages.length; i++) {
             const farm = sortedVillages[i];
@@ -164,7 +165,7 @@ const script = async () => {
             try {
                 const lastFarm = localStorage.getItem(keyBuilder([farm.x, farm.y]));
 
-                const expectedArrivalTime = dateNow + Math.round(lightSpeed * calculateDistance(farm.x, farm.y)) * 1000;
+                const expectedArrivalTime = dateNow + Math.round(spearSpeed * calculateDistance(farm.x, farm.y)) * 1000;
 
                 if (lastFarm && (expectedArrivalTime - lastFarm) < SEND_TIME_TRIP) {
                     continue;
@@ -341,13 +342,13 @@ const script = async () => {
     await Promise.all([
         farmVillages(),
         recruit({
-            troopId: 'light',
-            buildingId: 'stable',
+            troopId: 'spear',
+            buildingId: 'barracks',
             troopCount: 1,
             timeout: 3 * 60 * 1000,
             villages: [
-                [414, 498],
-                [413, 501]
+                [610, 500],
+                [613, 491]
             ]
         })
     ]);
@@ -363,7 +364,14 @@ const currentVillage = TribalWars.getGameData().village.id;
 
 if (window.VillageOverview) {
     const lightSpeed = 1 / (window.VillageOverview.units[1].light.speed);
-    localStorage.setItem('lightSpeed', lightSpeed);
+    if (!isNaN(lightSpeed)) {
+        localStorage.setItem('lightSpeed', lightSpeed);
+    }
+
+    const spearSpeed = 1 / (window.VillageOverview.units[1].spear.speed);
+    if (!isNaN(spearSpeed)) {
+        localStorage.setItem('spearSpeed', spearSpeed);
+    }
 }
 
 const getCurrentVillage = () => {
