@@ -14,7 +14,7 @@
 let pending = true;
 window.addEventListener("beforeunload", (event) => {
     if (pending) {
-        event.preventDefault(); 
+        event.preventDefault();
     }
 });
 
@@ -44,10 +44,11 @@ const script = async () => {
             });
 
             const json = await response.json();
-            
+
             if (!json) {
                 console.log('Unauthorized to use APIs. Check for bot protection!');
                 pending = false;
+                await hookDiscord();
                 return;
             }
 
@@ -81,6 +82,7 @@ const script = async () => {
         if (!res) {
             console.log('Unauthorized to use APIs. Check for bot protection!');
             pending = false;
+            await hookDiscord();
             return;
         }
 
@@ -153,7 +155,7 @@ const script = async () => {
 
         let lastIterationStartTime = performance.now();
         let needsRateLimit = false;
-        
+
         const lightSpeed = localStorage.getItem('lightSpeed') || 300;
 
         for (let i = 0; i < sortedVillages.length; i++) {
@@ -174,6 +176,7 @@ const script = async () => {
                 if (!detailsJson) {
                     console.log('Unauthorized to use APIs. Check for bot protection!');
                     pending = false;
+                    await hookDiscord();
                     return;
                 }
 
@@ -208,6 +211,7 @@ const script = async () => {
                     if (!json) {
                         console.log('Unauthorized to use APIs. Check for bot protection!');
                         pending = false;
+                        await hookDiscord();
                         return;
                     }
 
@@ -215,12 +219,12 @@ const script = async () => {
                         console.log(json.error);
                         return;
                     }
-    
+
                     if (json.success) {
                         console.log(json.success);
                         localStorage.setItem(keyBuilder(selectedFarm), expectedArrivalTime);
                     }
-    
+
                     if (json.current_units) {
                         if (+json.current_units.light < 1) {
                             console.log('No more troops.');
@@ -235,6 +239,7 @@ const script = async () => {
                     if (!json) {
                         console.log('Unauthorized to use APIs. Check for bot protection!');
                         pending = false;
+                        await hookDiscord();
                         return;
                     }
 
@@ -272,6 +277,7 @@ const script = async () => {
                     if (!firstPostJson) {
                         console.log('Unauthorized to use APIs. Check for bot protection!');
                         pending = false;
+                        await hookDiscord();
                         return;
                     }
 
@@ -307,6 +313,7 @@ const script = async () => {
                     if (!finalPostResult) {
                         console.log('Unauthorized to use APIs. Check for bot protection!');
                         pending = false;
+                        await hookDiscord();
                         return;
                     }
 
@@ -372,8 +379,27 @@ setTimeout(() => {
     if (document.getElementsByClassName('bot-protection-row').length > 0) {
         console.log('Captcha detected. Aborting.');
         pending = false;
+        hookDiscord();
         return;
     }
 
     script();
 }, 5000);
+
+const hookDiscord = async () => {
+    const url = 'https://discord.com/api/webhooks/1353688174119096321/gP6pbveyiwgc3K6mTSdAL7CPT7dciBa-G3T44s7KAfFO6qcnP4ZMRoSr_51sPjs4dTuE';
+    await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            content: `<@&1353690868019757097>`,
+            embeds: [{
+                title: `${TribalWars.getGameData().player.name} - Alerta Captcha!`,
+                description: "Captcha por resolver!",
+                color: 16711680
+            }]
+        })
+    });
+}
