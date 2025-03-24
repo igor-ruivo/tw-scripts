@@ -837,7 +837,7 @@ const script = async () => {
     }
 
     const fetchVillageDocument = async (path) => {
-        const response = await fetch(`${window.location.origin}/${path}`);
+        const response = await fetch(`${window.location.origin}/${path}${villages[currentVillageIndex]}`);
         const text = await response.text();
         return new DOMParser().parseFromString(text, 'text/html');
     }
