@@ -44,6 +44,13 @@ const script = async () => {
             });
 
             const json = await response.json();
+            
+            if (!json) {
+                console.log('Unauthorized to use APIs. Check for bot protection!');
+                pending = false;
+                return;
+            }
+
             localStorage.setItem(key, now);
 
             if (json.msg) {
@@ -56,7 +63,7 @@ const script = async () => {
         return Math.sqrt((currentVillageCoords.x - x) ** 2 + (currentVillageCoords.y - y) ** 2);
     };
 
-    const loadBarbarianVillages = async () => {
+    const loadVillages = async () => {
         const baseUrl = `${window.location.origin}/map.php?v=2&e=${new Date().getTime()}`;
 
         let params = [];
@@ -71,6 +78,12 @@ const script = async () => {
         const req = await fetch(fullUrl);
         const res = await req.json();
 
+        if (!res) {
+            console.log('Unauthorized to use APIs. Check for bot protection!');
+            pending = false;
+            return;
+        }
+
         const uniqueVillages = new Map();
 
         res.forEach(({ data }) => {
@@ -82,13 +95,16 @@ const script = async () => {
                 Object.entries(villageSet).forEach(([idx, village]) => {
                     const villageId = village[0];
                     const owner = village[4];
+                    const isBarbarian = owner === '0';
+                    const points = Number(isBarbarian ? village[3].replaceAll(",", "").replaceAll(".", "") : data.players[owner][1].replaceAll(",", "").replaceAll(".", ""));
+                    const beginner = !isBarbarian && !!data.players[owner][3];
                     const x = Number(villageKey) + data.x;
                     const y = Number(idx) + data.y;
 
                     const id = `${x}|${y}`;
 
-                    if (owner === "0" && !uniqueVillages.has(id)) {
-                        uniqueVillages.set(id, { x, y, villageId: villageId });
+                    if (!uniqueVillages.has(id)) {
+                        uniqueVillages.set(id, { x, y, villageId, isBarbarian, points, beginner });
                     }
                 });
             });
@@ -98,9 +114,9 @@ const script = async () => {
         return villages;
     }
 
-    const getBarbarianVillages = async () => {
-        const barbarianKey = 'barbarianVillages';
-        const timestampKey = 'barbarianVillagesTimestamp';
+    const getVillages = async () => {
+        const barbarianKey = 'villages';
+        const timestampKey = 'villagesTimestamp';
         const oneHour = 60 * 60 * 1000;
 
         let cachedBarbarianVillages = localStorage.getItem(barbarianKey);
@@ -108,7 +124,7 @@ const script = async () => {
         let now = Date.now();
 
         if (!cachedBarbarianVillages || !lastUpdate || (now - lastUpdate > oneHour)) {
-            const newData = await loadBarbarianVillages();
+            const newData = await loadVillages();
             localStorage.setItem(barbarianKey, JSON.stringify(newData));
             localStorage.setItem(timestampKey, now.toString());
             return newData;
@@ -117,15 +133,17 @@ const script = async () => {
         }
     }
 
-    const farmBarbarianVillages = async () => {
-        const villages = await getBarbarianVillages();
+    const farmVillages = async (includeRealPlayers = true) => {
+        const villages = await getVillages();
 
-        const sortedVillages = villages.sort((a, b) => {
-            const aDistance = calculateDistance(a.x, a.y);
-            const bDistance = calculateDistance(b.x, b.y);
+        const sortedVillages = villages
+            .filter(v => !includeRealPlayers || v.isBarbarian || v.points <= 100 && !v.beginner)
+            .sort((a, b) => {
+                const aDistance = calculateDistance(a.x, a.y);
+                const bDistance = calculateDistance(b.x, b.y);
 
-            return aDistance - bDistance;
-        });
+                return aDistance - bDistance;
+            });
 
         const keyBuilder = (coords) => `f${coords}f`;
 
@@ -153,6 +171,12 @@ const script = async () => {
                 const details = await fetch(`${window.location.origin}/game.php?village=${currentVillage}&screen=map&ajax=map_info&source=${currentVillage}&target=${farm.villageId}&`);
                 const detailsJson = await details.json();
 
+                if (!detailsJson) {
+                    console.log('Unauthorized to use APIs. Check for bot protection!');
+                    pending = false;
+                    return;
+                }
+
                 if (detailsJson.attack) {
                     const dot = detailsJson.attack.dot;
                     if (dot !== 1) {
@@ -163,8 +187,6 @@ const script = async () => {
 
                 selectedFarm = [farm.x, farm.y];
 
-                const url = `${window.location.origin}/game.php?village=${currentVillage}&screen=am_farm&mode=farm&ajaxaction=farm&template_id=583&target=${farm.villageId}&source=${currentVillage}&json=1&h=${TribalWars.getGameData().csrf}`;
-
                 if (needsRateLimit) {
                     const ellapsedTime = performance.now() - lastIterationStartTime;
                     const sleepMs = Math.max(0, 200 - ellapsedTime);
@@ -174,28 +196,121 @@ const script = async () => {
                     }
                 }
 
+                needsRateLimit = true;
                 lastIterationStartTime = performance.now();
 
-                const result = await fetch(url);
-                needsRateLimit = true;
+                if (farm.isBarbarian) {
+                    const url = `${window.location.origin}/game.php?village=${currentVillage}&screen=am_farm&mode=farm&ajaxaction=farm&template_id=583&target=${farm.villageId}&source=${currentVillage}&json=1&h=${TribalWars.getGameData().csrf}`;
+                    const result = await fetch(url);
 
-                const json = await result.json();
+                    const json = await result.json();
 
-                if (json.error) {
-                    console.log(json.error);
-                    return;
-                }
-
-                if (json.success) {
-                    console.log(json.success);
-                    localStorage.setItem(keyBuilder(selectedFarm), expectedArrivalTime);
-                }
-
-                if (json.current_units) {
-                    if (+json.current_units.light < 1) {
-                        console.log('No more troops.');
+                    if (!json) {
+                        console.log('Unauthorized to use APIs. Check for bot protection!');
+                        pending = false;
                         return;
                     }
+
+                    if (json.error) {
+                        console.log(json.error);
+                        return;
+                    }
+    
+                    if (json.success) {
+                        console.log(json.success);
+                        localStorage.setItem(keyBuilder(selectedFarm), expectedArrivalTime);
+                    }
+    
+                    if (json.current_units) {
+                        if (+json.current_units.light < 1) {
+                            console.log('No more troops.');
+                            return;
+                        }
+                    }
+                } else {
+                    const url = `${window.location.origin}/game.php?village=${currentVillage}&screen=place&ajax=command&target=${farm.villageId}`;
+                    const result = await fetch(url);
+                    const json = await result.json();
+
+                    if (!json) {
+                        console.log('Unauthorized to use APIs. Check for bot protection!');
+                        pending = false;
+                        return;
+                    }
+
+                    if (!json.dialog || json.error) {
+                        console.log(`Error attacking player ${farm.villageId} (${farm.x}, ${farm.y}):`);
+                        console.error(json.error ?? json);
+                        continue;
+                    }
+
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(json.dialog, 'text/html');
+
+                    const dataForm = doc.getElementById('command-data-form');
+                    const hiddenInput = dataForm.querySelector('input[type="hidden"]');
+
+                    const name = hiddenInput.name;
+                    const value = hiddenInput.value;
+
+                    const formData = new FormData();
+                    formData.append(name, value);
+                    formData.append('source_village', currentVillage);
+                    formData.append('light', 2);
+                    formData.append('x', farm.x);
+                    formData.append('y', farm.y);
+                    formData.append('attack', 1);
+                    formData.append('h', TribalWars.getGameData().csrf);
+
+                    const firstPostResult = await fetch(`${window.location.origin}/game.php?village=${currentVillage}&screen=place&ajax=confirm`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const firstPostJson = await firstPostResult.json();
+
+                    if (!firstPostJson) {
+                        console.log('Unauthorized to use APIs. Check for bot protection!');
+                        pending = false;
+                        return;
+                    }
+
+                    if (!firstPostJson.dialog || firstPostJson.error) {
+                        console.log(`Error attacking player ${farm.villageId} (${farm.x}, ${farm.y}):`);
+                        console.error(firstPostJson.error ?? firstPostJson);
+                        continue;
+                    }
+
+                    const doc2 = parser.parseFromString(firstPostJson.dialog, 'text/html');
+                    const chHiddenInput = doc2.querySelector('input[type="hidden"][name="ch"]');
+
+                    const finalFormData = new FormData();
+                    finalFormData.append('attack', true);
+                    finalFormData.append('ch', chHiddenInput.value);
+                    finalFormData.append('cb', 'troop_confirm_submit');
+                    finalFormData.append('x', farm.x);
+                    finalFormData.append('y', farm.y);
+                    finalFormData.append('source_village', currentVillage);
+                    finalFormData.append('village', currentVillage);
+                    finalFormData.append('light', 2);
+                    finalFormData.append('building', 'main');
+                    finalFormData.append('h', TribalWars.getGameData().csrf);
+                    finalFormData.append('h', TribalWars.getGameData().csrf);
+
+                    const finalPostResult = await fetch(`${window.location.origin}/game.php?village=${currentVillage}&screen=place&ajaxaction=popup_command`, {
+                        method: 'POST',
+                        body: finalFormData
+                    });
+
+                    await finalPostResult.json();
+
+                    if (!finalPostResult) {
+                        console.log('Unauthorized to use APIs. Check for bot protection!');
+                        pending = false;
+                        return;
+                    }
+
+                    localStorage.setItem(keyBuilder(selectedFarm), expectedArrivalTime);
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -217,7 +332,7 @@ const script = async () => {
     }
 
     await Promise.all([
-        farmBarbarianVillages(),
+        farmVillages(),
         recruit({
             troopId: 'light',
             buildingId: 'stable',
@@ -252,4 +367,13 @@ const getCurrentVillage = () => {
 }
 
 const currentVillageCoords = getCurrentVillage();
-script();
+
+setTimeout(() => {
+    if (document.getElementsByClassName('bot-protection-row').length > 0) {
+        console.log('Captcha detected. Aborting.');
+        pending = false;
+        return;
+    }
+
+    script();
+}, 5000);
