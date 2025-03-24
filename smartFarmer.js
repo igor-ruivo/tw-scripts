@@ -20,7 +20,7 @@ window.addEventListener("beforeunload", (event) => {
 
 const script = async () => {
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-    const SEND_TIME_TRIP = 1000 * 60 * 10;
+    const SEND_TIME_TRIP = 1000 * 60 * 2;
     const TIME_IN_EACH_VILLAGE = 20 * 1000;
 
     const recruit = async (troopConfig) => {
@@ -42,6 +42,12 @@ const script = async () => {
                 method: 'POST',
                 body: formData
             });
+
+            if (!response.ok) {
+                console.error(response.statusText);
+                pending = false
+                return;
+            }
 
             const json = await response.json();
 
@@ -77,6 +83,13 @@ const script = async () => {
         const fullUrl = `${baseUrl}&${params.join('&')}`;
 
         const req = await fetch(fullUrl);
+
+        if (!req.ok) {
+            console.error(req.statusText);
+            pending = false
+            return;
+        }
+
         const res = await req.json();
 
         if (!res) {
@@ -135,11 +148,11 @@ const script = async () => {
         }
     }
 
-    const farmVillages = async (includeRealPlayers = true) => {
+    const farmVillages = async (includeRealPlayers = false) => {
         const villages = await getVillages();
 
         const sortedVillages = villages
-            .filter(v => !includeRealPlayers || v.isBarbarian || v.points <= 100 && !v.beginner)
+            .filter(v => v.isBarbarian || includeRealPlayers && v.points <= 100 && !v.beginner)
             .sort((a, b) => {
                 const aDistance = calculateDistance(a.x, a.y);
                 const bDistance = calculateDistance(b.x, b.y);
@@ -165,13 +178,20 @@ const script = async () => {
             try {
                 const lastFarm = localStorage.getItem(keyBuilder([farm.x, farm.y]));
 
-                const expectedArrivalTime = dateNow + Math.round(spearSpeed * calculateDistance(farm.x, farm.y)) * 1000;
+                const expectedArrivalTime = dateNow + Math.round(lightSpeed * calculateDistance(farm.x, farm.y)) * 1000;
 
                 if (lastFarm && (expectedArrivalTime - lastFarm) < SEND_TIME_TRIP) {
                     continue;
                 }
 
                 const details = await fetch(`${window.location.origin}/game.php?village=${currentVillage}&screen=map&ajax=map_info&source=${currentVillage}&target=${farm.villageId}&`);
+                
+            if (!details.ok) {
+                console.error(details.statusText);
+                pending = false
+                return;
+            }
+
                 const detailsJson = await details.json();
 
                 if (!detailsJson) {
@@ -193,7 +213,7 @@ const script = async () => {
 
                 if (needsRateLimit) {
                     const ellapsedTime = performance.now() - lastIterationStartTime;
-                    const sleepMs = Math.max(0, 200 - ellapsedTime);
+                    const sleepMs = Math.max(0, 1000 - ellapsedTime);
 
                     if (sleepMs > 0) {
                         await sleep(sleepMs);
@@ -204,8 +224,14 @@ const script = async () => {
                 lastIterationStartTime = performance.now();
 
                 if (farm.isBarbarian) {
-                    const url = `${window.location.origin}/game.php?village=${currentVillage}&screen=am_farm&mode=farm&ajaxaction=farm&template_id=583&target=${farm.villageId}&source=${currentVillage}&json=1&h=${TribalWars.getGameData().csrf}`;
+                    const url = `${window.location.origin}/game.php?village=${currentVillage}&screen=am_farm&mode=farm&ajaxaction=farm&template_id=433&target=${farm.villageId}&source=${currentVillage}&json=1&h=${TribalWars.getGameData().csrf}`;
                     const result = await fetch(url);
+
+                    if (!result.ok) {
+                        console.error(result.statusText);
+                        pending = false
+                        return;
+                    }
 
                     const json = await result.json();
 
@@ -235,6 +261,13 @@ const script = async () => {
                 } else {
                     const url = `${window.location.origin}/game.php?village=${currentVillage}&screen=place&ajax=command&target=${farm.villageId}`;
                     const result = await fetch(url);
+
+                    if (!result.ok) {
+                        console.error(result.statusText);
+                        pending = false
+                        return;
+                    }
+
                     const json = await result.json();
 
                     if (!json) {
@@ -273,6 +306,12 @@ const script = async () => {
                         body: formData
                     });
 
+                    if (!firstPostResult.ok) {
+                        console.error(firstPostResult.statusText);
+                        pending = false
+                        return;
+                    }
+
                     const firstPostJson = await firstPostResult.json();
 
                     if (!firstPostJson) {
@@ -309,6 +348,12 @@ const script = async () => {
                         body: finalFormData
                     });
 
+                    if (!finalPostResult.ok) {
+                        console.error(finalPostResult.statusText);
+                        pending = false
+                        return;
+                    }
+
                     await finalPostResult.json();
 
                     if (!finalPostResult) {
@@ -342,13 +387,12 @@ const script = async () => {
     await Promise.all([
         farmVillages(),
         recruit({
-            troopId: 'spear',
-            buildingId: 'barracks',
+            troopId: 'light',
+            buildingId: 'stable',
             troopCount: 1,
-            timeout: 3 * 60 * 1000,
+            timeout: 10 * 1000,
             villages: [
-                [610, 500],
-                [613, 491]
+                [638, 595]
             ]
         })
     ]);
@@ -362,13 +406,13 @@ const script = async () => {
 
 const currentVillage = TribalWars.getGameData().village.id;
 
-if (window.VillageOverview) {
-    const lightSpeed = 1 / (window.VillageOverview.units[1].light.speed);
+if (typeof VillageOverview !== 'undefined') {
+    const lightSpeed = 1 / (VillageOverview.units[1].light.speed);
     if (!isNaN(lightSpeed)) {
         localStorage.setItem('lightSpeed', lightSpeed);
     }
 
-    const spearSpeed = 1 / (window.VillageOverview.units[1].spear.speed);
+    const spearSpeed = 1 / (VillageOverview.units[1].spear.speed);
     if (!isNaN(spearSpeed)) {
         localStorage.setItem('spearSpeed', spearSpeed);
     }
