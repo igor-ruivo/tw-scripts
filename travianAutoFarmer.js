@@ -11,7 +11,7 @@
 // @grant               unsafeWindow
 // ==/UserScript==
 
-let pending = true;
+let pending = false;
 window.addEventListener("beforeunload", (event) => {
     if (pending) {
         event.preventDefault();
@@ -19,13 +19,14 @@ window.addEventListener("beforeunload", (event) => {
 });
 
 const script = async () => {
+    pending = true;
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
     const SEND_TIME_TRIP = 1000 * 60 * 10;
     const TIME_IN_EACH_VILLAGE = 20 * 1000;
-    const blockCerealWhenNotNeeded = false;
+    const blockCerealWhenNotNeeded = true;
     const maxPopToFarm = 50;
     const minHeroHealth = 30;
-    const maxAnimalCount = 20;
+    const maxAnimalCount = 15;
     const playAd = false;
 
     const recruit = async (troopConfig) => {
@@ -274,9 +275,9 @@ const script = async () => {
                     "villageId": +currentVillageId
                 }),
             });
-        
+
             const nonce = nonceCall.headers.get("x-nonce");
-        
+
             await fetch(`${window.location.origin}/api/v1/hero/v2/inventory/use-item`, {
                 method: "POST",
                 headers: {
@@ -291,7 +292,7 @@ const script = async () => {
                 }),
             });
         });
-        
+
         await Promise.all(promises);
     }
 
@@ -339,7 +340,7 @@ const script = async () => {
             });
             return response.json();
         };
-        
+
         const centerX = currentVillageCoords[0];
         const centerY = currentVillageCoords[1];
 
@@ -401,7 +402,7 @@ const script = async () => {
             }
 
             const farm = farms[i];
-    
+
             try {
                 const lastFarm = localStorage.getItem(keyBuilder([farm.position.x, farm.position.y]));
 
@@ -425,23 +426,23 @@ const script = async () => {
                 if (!(lastTimeCheckedPlayerPop && Date.now() < lastTimeCheckedPlayerPop + 24 * 1000 * 60 * 60)) {
                     const pop = await fetchPlayerPop(farm.uid);
                     localStorage.setItem(`pop${farm.uid}pop`, Date.now());
-                    
+
                     if (pop > maxPopToFarm) {
                         blackList.push(farmCoords);
                         localStorage.setItem('blacklist', JSON.stringify(blackList));
                         continue;
                     }
                 }
-                
+
                 const reports = await fetch(`${window.location.origin}/api/v1/map/tile-details`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ "x": farm.position.x, "y": farm.position.y })
                 });
-    
+
                 const reportsJson = await reports.json();
                 const htmlComponent = reportsJson.html;
-    
+
                 const parser = new DOMParser();
                 const html = parser.parseFromString(htmlComponent, 'text/html');
                 const troopInfo = html.getElementById('troop_info');
@@ -449,10 +450,10 @@ const script = async () => {
 
                 const canSend = Array.from(html.querySelectorAll(".options .option .a.arrow"))
                     .some(el => el.innerText.includes("Send troops") && !el.classList.contains("disabled"));
-    
+
                 if (noLosses && canSend) {
                     selectedFarm = [farm.position.x, farm.position.y];
-                    
+
                     const url = `${window.location.origin}/build.php?gid=16&tt=2`;
 
                     const formData = new URLSearchParams();
@@ -589,13 +590,15 @@ const script = async () => {
         const mapSearch = await fetch(`${window.location.origin}/api/v1/map/position`, {
             method: "POST",
             headers: {
-            "Content-Type": "application/json"
+                "Content-Type": "application/json"
             },
-            body: JSON.stringify({data:{
-                x: currentVillageCoords[0],
-                y: currentVillageCoords[1],
-                zoomLevel: 3
-            }})
+            body: JSON.stringify({
+                data: {
+                    x: currentVillageCoords[0],
+                    y: currentVillageCoords[1],
+                    zoomLevel: 3
+                }
+            })
         });
 
         const jsonResult = await mapSearch.json();
@@ -628,9 +631,9 @@ const script = async () => {
         for (let i = 0; i < farmList.length; i++) {
             const currCord = farmList[i];
             const lastFarm = localStorage.getItem(keyBuilder(currCord));
-            if (!lastFarm || animals || (dateNow - lastFarm) >= SEND_TIME_TRIP ) {
+            if (!lastFarm || animals || (dateNow - lastFarm) >= SEND_TIME_TRIP) {
                 selectedFarm = currCord;
-                
+
                 const url = `${window.location.origin}/build.php?gid=16&tt=2`;
 
                 const formData = new URLSearchParams();
@@ -802,7 +805,7 @@ const script = async () => {
             const response = await fetch(`${window.location.origin}/api/v1/adsales/open`, {
                 method: "POST",
                 headers: {
-                  "Content-Type": "application/json",
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                     "villageId": villageId,
@@ -839,24 +842,57 @@ const script = async () => {
         return new DOMParser().parseFromString(text, 'text/html');
     }
 
+    const isWall = (id) => id === 31 || id === 32 || id === 33;
+    const isWallOrRally = (id) => isWall(id) || id === 16;
+
     const upgradeBuilds = async () => {
         const strictGroupOrder = false;
 
         const queue = [
             [
-                [10, 10],
-                [11, 10]
+                [16, 1],
+                [31, 1],
+                [23, 1]
             ],
             [
+                [1, 5],
+                [2, 5],
+                [3, 5],
+                [4, 5]
+            ],
+            [
+                [10, 1],
+                [11, 1]
+            ],
+            [
+                [15, 3],
+                [12, 3],
+                [22, 5],
+                [19, 3],
+                [20, 5]
+            ],
+            [
+                [10, 5],
+                [11, 5]
+            ],
+            [
+                [25, 10]
+            ],
+            [
+                [18, 1],
+                [17, 10],
                 [24, 10]
             ],
             [
-                [15, 20]
+                [8, 5]
             ],
             [
                 [1, 10],
                 [2, 10],
                 [3, 10]
+            ],
+            [
+                [4, 10]
             ]
         ];
 
@@ -867,11 +903,6 @@ const script = async () => {
 
         const options = buildings.filter(o => o.good);
 
-        if (options === 0) {
-            console.log('Nothing available to build.');
-            return;
-        }
-
         options.sort((a, b) => Number(a.level) - Number(b.level));
 
         const cerealForProduction = Number(document.getElementById('stockBarFreeCrop').innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
@@ -879,7 +910,85 @@ const script = async () => {
         const currentGranary = Number(document.getElementsByClassName('capacity')[1].innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
         const cerealRate = currentCereal / currentGranary;
 
+        const newBuilds = queue.some(a => a.some(k => !isWallOrRally(k[0]) && !buildings.some(b => b.gid === k[0])));
+        const wall = queue.some(a => a.some(k => isWall(k[0]) && !buildings.some(b => b.gid === k[0])));
+        const rally = queue.some(a => a.some(k => k[0] === 16 && !buildings.some(b => b.gid === 16)));
+        const sampleSlot = buildings.find(b => b.free && b.id !== 39 && b.id !== 40)?.id;
+
+        const newButtons = [];
+
+        const fetchBuildingButtons = async (id, category = null) => {
+            const pageUrl = category 
+                ? `${window.location.origin}/build.php?id=${id}&category=${category}`
+                : `${window.location.origin}/build.php?id=${id}`;
+
+            try {
+                const res = await fetch(pageUrl);
+                const resText = await res.text();
+                const doc = new DOMParser().parseFromString(resText, 'text/html');
+                const buttons = Array.from(doc.getElementsByClassName('green new'));
+
+                newButtons.push(...buttons);
+            } catch (error) {
+                console.error(`Error fetching buttons for id ${id}:`, error);
+            }
+        };
+
+        const fetchPromises = [];
+
+        if (newBuilds) {
+            if (!sampleSlot) {
+                console.error('No space for new buildings!');
+            } else {
+                [null, 2, 3].forEach(category => 
+                    fetchPromises.push(fetchBuildingButtons(sampleSlot, category))
+                );
+            }
+        }
+
+        if (wall) {
+            fetchPromises.push(fetchBuildingButtons(40));
+        }
+        if (rally) {
+            fetchPromises.push(fetchBuildingButtons(39));
+        }
+
+        await Promise.all(fetchPromises);
+        
         for (const group of queue) {
+            const buildable = group
+                .filter(a => !buildings.some(b => b.gid === a[0]))
+                .map(a => a[0]);
+
+            for (const build of buildable) {
+                const slot = build === 16 ? 39 : isWall(build) ? 40 : buildings.find(b => b.free && b.id !== 39 && b.id !== 40)?.id;
+
+                if (!slot) {
+                    console.log('No More slots available.');
+                    break;
+                }
+
+                const btn = Array.from(newButtons)
+                    .find(b => {
+                        const onClickAttr = b.getAttribute("onclick");
+                        const match = onClickAttr.match(/gid=(\d+)/);
+                        return match && Number(match[1]) === build;
+                    });
+
+                if (!btn) {
+                    continue;
+                }
+
+                const success = await triggerBuildActionButton(btn);
+
+                if (success) {
+                    pending = false;
+                    window.location.reload(true);
+                }
+
+                return;
+            }
+
             const upgradeable = options
                 .filter(o => group.some(([id]) => id === Number(o.gid)))
                 .sort((a, b) => Number(a.level) - Number(b.level));
@@ -896,8 +1005,6 @@ const script = async () => {
                     console.log('Skipping cereal field. No need yet.');
                     continue;
                 }
-
-                await sleep(Math.random() * 2000);
 
                 const upgradeButton = await getBuildActionButton(option.gid, option.id);
                 const button = upgradeButton.button;
@@ -917,6 +1024,7 @@ const script = async () => {
                 const success = await triggerBuildActionButton(button);
 
                 if (success) {
+                    pending = false;
                     window.location.reload(true);
                     return;
                 }
@@ -928,7 +1036,7 @@ const script = async () => {
             }
         }
 
-        console.log("Couldn't upgrade any resource field.");
+        console.log("Couldn't upgrade any field.");
     }
 
     const tradeBetweenVillages = async () => {
@@ -954,7 +1062,7 @@ const script = async () => {
                 ]
             }
         ];
-        
+
         const entry = helpingSystem.find(h => h.sender === `${currentVillageCoords[0]}|${currentVillageCoords[1]}`);
 
         if (!entry) {
@@ -964,10 +1072,10 @@ const script = async () => {
         const response = await fetch(`${window.location.origin}/api/v1/graphql`, {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
+                "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              query: `query {
+                query: `query {
                 ownPlayer {
                   village {
                     marketplace {
@@ -1001,10 +1109,10 @@ const script = async () => {
             const ongoingRes = await fetch(`${window.location.origin}/api/v1/graphql`, {
                 method: "POST",
                 headers: {
-                  "Content-Type": "application/json",
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  query: `query {
+                    query: `query {
                     ownPlayer {
                         village {
                         marketplace {
@@ -1075,7 +1183,7 @@ const script = async () => {
                 iron: Math.min(helpedMissingResources.iron, Math.min(currentIron, Math.floor(helpedMissingResources.iron / missingSum * maxResourcesToSend))),
                 cereal: Math.min(helpedMissingResources.cereal, Math.min(currentCereal, Math.floor(helpedMissingResources.cereal / missingSum * maxResourcesToSend)))
             };
-            
+
             const currentWarehouse = Number(document.getElementsByClassName('capacity')[0].innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
             const currentGranary = Number(document.getElementsByClassName('capacity')[1].innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
 
@@ -1099,7 +1207,7 @@ const script = async () => {
             const nonceCall = await fetch(`${window.location.origin}/api/v1/marketplace/resources/send`, {
                 method: "PUT",
                 headers: {
-                  "Content-Type": "application/json",
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                     action: 'marketPlace',
@@ -1174,6 +1282,7 @@ const script = async () => {
             const button = buildButton.button;
             if (button) {
                 await triggerBuildActionButton(button);
+                pending = false;
                 window.location.reload(true);
             } else {
                 console.log("Warehouse could not be upgraded.");
@@ -1187,6 +1296,7 @@ const script = async () => {
             const button = buildButton.button;
             if (button) {
                 await triggerBuildActionButton(button);
+                pending = false;
                 window.location.reload(true);
             } else {
                 console.log("Granary could not be upgraded.");
@@ -1222,19 +1332,19 @@ const script = async () => {
     const queued = documentVil1.getElementsByClassName('buildDuration').length;
 
     const buildings = [documentVil1, documentVil2]
-        .map(v => Array.from(v.getElementsByClassName('good'))
-            .concat(Array.from(v.getElementsByClassName('maxLevel')))
-            .concat(Array.from(v.getElementsByClassName('notNow')))
-        .map(e => ({
-            good: e.classList.contains('good'),
-            gid: Number(e.parentElement.getAttribute('data-gid') ?? e.getAttribute('data-gid')),
-            id: Number(e.parentElement.getAttribute('data-aid') ?? e.getAttribute('data-aid')),
-            level: Number(e.getElementsByClassName('labelLayer')[0]?.innerText || '0') + Number(e.classList.contains('underConstruction') ? 1 : 0)
-        }))).flat();
+        .map(v => Array.from(v.getElementsByClassName('buildingSlot'))
+            .concat(Array.from(v.getElementsByClassName('resourceField')))
+            .map(e => ({
+                good: e.classList.contains('good') || e.children[0].classList.contains('good'),
+                free: e.classList.contains('g0'),
+                gid: Number(e.parentElement.getAttribute('data-gid') ?? e.getAttribute('data-gid')),
+                id: Number(e.parentElement.getAttribute('data-aid') ?? e.getAttribute('data-aid')),
+                level: Number(e.getElementsByClassName('labelLayer')[0]?.innerText || '0') + Number(e.classList.contains('underConstruction') ? 1 : 0)
+            }))).flat();
 
     await collectResources();
 
-    if (queued < 2) {
+    if (queued < 3) {
         await upgradeBuilds();
         await upgradeStorageIfNeeded();
     } else {
@@ -1242,12 +1352,12 @@ const script = async () => {
     }
 
     await Promise.all([
-        farmPlayers(),
+        //farmPlayers(),
         adventure(),
         //balanceHeroProduction(),
         farmOasis(true),
         //farmOasis(false),
-        recruit({
+        /*recruit({
             id: 19,
             troopId: 't3',
             troopCount: 1,
@@ -1264,9 +1374,9 @@ const script = async () => {
             villages: [
                 [-13, 87]
             ]
-        }),
+        }),*/
     ]);
-    
+
 
     const resourcePromises = villages.map(v => new Promise(async (resolve) => {
         const res = await fetch(`${window.location.origin}/api/v1/village/resources${v}`, {
@@ -1274,7 +1384,7 @@ const script = async () => {
         });
 
         const jRes = await res.json();
-        
+
         const storage = jRes.maxStorage.l1;
         const granary = jRes.maxStorage.l4;
         const wood = jRes.storage.l1;
@@ -1318,4 +1428,4 @@ const script = async () => {
     }, TIME_IN_EACH_VILLAGE);
 }
 
-script();
+setTimeout(script, 3000);
