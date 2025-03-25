@@ -11,7 +11,7 @@
 // @grant               unsafeWindow
 // ==/UserScript==
 
-let pending = true;
+let pending = false;
 window.addEventListener("beforeunload", (event) => {
     if (pending) {
         event.preventDefault();
@@ -19,6 +19,7 @@ window.addEventListener("beforeunload", (event) => {
 });
 
 const script = async () => {
+    pending = true;
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
     const SEND_TIME_TRIP = 1000 * 60 * 2;
     const TIME_IN_EACH_VILLAGE = 20 * 1000;
@@ -253,7 +254,7 @@ const script = async () => {
                     }
 
                     if (json.current_units) {
-                        if (+json.current_units.light < 1) {
+                        if (+json.current_units.light < 2) {
                             console.log('No more troops.');
                             return;
                         }
@@ -389,7 +390,7 @@ const script = async () => {
         recruit({
             troopId: 'light',
             buildingId: 'stable',
-            troopCount: 1,
+            troopCount: 2,
             timeout: 10 * 1000,
             villages: [
                 [638, 595]
@@ -428,6 +429,14 @@ const getCurrentVillage = () => {
 const currentVillageCoords = getCurrentVillage();
 
 setTimeout(() => {
+    const maxPopulation = document.getElementById("pop_max_label").innerText;
+	const currentPopulation = document.getElementById("pop_current_label").innerText;
+	const currentFarmPercentage = Math.round(currentPopulation / maxPopulation * 100);
+
+    if (currentFarmPercentage >= 95) {
+        hookDiscord(false, `${TribalWars.getGameData().player.name} - Fazenda cheia!`, `Fazenda a ${currentFarmPercentage}% em ${TribalWars.getGameData().village.display_name}.`);
+    }
+
     if (document.getElementsByClassName('bot-protection-row').length > 0) {
         console.log('Captcha detected. Aborting.');
         pending = false;
@@ -438,7 +447,7 @@ setTimeout(() => {
     script();
 }, 5000);
 
-const hookDiscord = async () => {
+const hookDiscord = async (logout = true, title = `${TribalWars.getGameData().player.name} - Alerta Captcha!`, description = "Captcha por resolver!") => {
     const url = 'https://discord.com/api/webhooks/1353688174119096321/gP6pbveyiwgc3K6mTSdAL7CPT7dciBa-G3T44s7KAfFO6qcnP4ZMRoSr_51sPjs4dTuE';
     await fetch(url, {
         method: "POST",
@@ -448,10 +457,14 @@ const hookDiscord = async () => {
         body: JSON.stringify({
             content: `<@&1353690868019757097>`,
             embeds: [{
-                title: `${TribalWars.getGameData().player.name} - Alerta Captcha!`,
-                description: "Captcha por resolver!",
+                title: title,
+                description: description,
                 color: 16711680
             }]
         })
     });
+
+    if (logout) {
+        Array.from(document.getElementsByTagName('a')).filter(k => k.href.includes('logout'))[0].click();
+    }
 }

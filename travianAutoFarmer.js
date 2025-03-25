@@ -872,6 +872,9 @@ const script = async () => {
                 [20, 5]
             ],
             [
+                [15, 5]
+            ],
+            [
                 [10, 5],
                 [11, 5]
             ],
@@ -880,11 +883,7 @@ const script = async () => {
             ],
             [
                 [18, 1],
-                [17, 10],
                 [24, 10]
-            ],
-            [
-                [8, 5]
             ],
             [
                 [1, 10],
@@ -892,7 +891,21 @@ const script = async () => {
                 [3, 10]
             ],
             [
+                [15, 20]
+            ],
+            [
+                [5, 5],
+                [6, 5],
+                [7, 5],
+                [8, 5],
+                [9, 5],
+            ],
+            [
                 [4, 10]
+            ],
+            [
+                [19, 20],
+                [20, 20]
             ]
         ];
 
@@ -1002,7 +1015,6 @@ const script = async () => {
                 const isCereal = id === 4;
 
                 if (blockCerealWhenNotNeeded && isCereal && cerealForProduction > 10/* && cerealRate > 0.25*/) {
-                    console.log('Skipping cereal field. No need yet.');
                     continue;
                 }
 
@@ -1017,7 +1029,6 @@ const script = async () => {
                 const nextLevel = match ? parseInt(match[0], 10) : ((1 + Number(upgradeButton.currentTitleLevel)) ?? Infinity);
 
                 if (nextLevel > targetLevel) {
-                    console.log(`${id} level already too high. Continuing.`);
                     continue;
                 }
 
