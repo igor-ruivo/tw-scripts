@@ -46,6 +46,11 @@ if (window.location.href.includes("session_expired")) {
     document.getElementsByClassName("world_button_active")[0]?.parentElement.click();
 }
 
+if (window.location.href.includes("screen=overview_villages&intro")) {
+    const element = document.getElementById('menu_row2_village').querySelector('a[href*="screen=overview"]');
+    element.click();
+}
+
 const script = async () => {
     pending = true;
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));

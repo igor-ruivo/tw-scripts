@@ -1009,7 +1009,6 @@ const script = async () => {
                 .filter(o => group.some(([id]) => id === Number(o.gid)))
                 .sort((a, b) => Number(a.level) - Number(b.level));
 
-            let candidateBuilding = false;
             for (const option of upgradeable) {
                 const [id, targetLevel] = group.find(([gid]) => gid === Number(option.gid)) || [];
                 if (!id) {
@@ -1036,8 +1035,6 @@ const script = async () => {
                     continue;
                 }
 
-                candidateBuilding = true;
-
                 const success = await triggerBuildActionButton(button);
 
                 if (success) {
@@ -1047,7 +1044,7 @@ const script = async () => {
                 }
             }
 
-            if (strictGroupOrder && candidateBuilding) {
+            if (strictGroupOrder) {
                 console.log("Couldn't upgrade buildings from priority level. Returning.");
                 return;
             }
