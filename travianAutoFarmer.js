@@ -26,7 +26,7 @@ const script = async () => {
     const blockCerealWhenNotNeeded = true;
     const maxPopToFarm = 50;
     const minHeroHealth = 30;
-    const maxAnimalCount = 15;
+    const maxAnimalCount = 20;
     const playAd = false;
 
     const recruit = async (troopConfig) => {
@@ -846,52 +846,46 @@ const script = async () => {
     const isWallOrRally = (id) => isWall(id) || id === 16;
 
     const upgradeBuilds = async () => {
-        const strictGroupOrder = false;
+        const strictGroupOrder = true;
 
         const queue = [
             [
+                [10, 1],
+                [11, 1],
                 [16, 1],
                 [31, 1],
-                [23, 1]
-            ],
-            [
+                [23, 1],
+                [18, 1],
+                [15, 3],
+                [17, 1],
                 [1, 5],
                 [2, 5],
                 [3, 5],
-                [4, 5]
+                [4, 1]
             ],
             [
-                [10, 1],
-                [11, 1]
-            ],
-            [
-                [15, 3],
                 [13, 3],
                 [22, 5],
                 [19, 3],
-                [20, 5]
+                [20, 5],
+                [10, 5],
+                [11, 5]
             ],
             [
                 [15, 5]
             ],
             [
-                [10, 5],
-                [11, 5]
-            ],
-            [
                 [25, 10]
             ],
             [
-                [18, 1],
-                [24, 10]
-            ],
-            [
+                [4, 5],
+                [24, 10],
+                [15, 20],
                 [1, 10],
                 [2, 10],
-                [3, 10]
-            ],
-            [
-                [15, 20]
+                [3, 10],
+                [10, 15],
+                [11, 15]
             ],
             [
                 [5, 5],
@@ -899,17 +893,26 @@ const script = async () => {
                 [7, 5],
                 [8, 5],
                 [9, 5],
-            ],
-            [
-                [4, 10]
+                [4, 10],
+                [10, 18],
+                [11, 18]
             ],
             [
                 [19, 20],
-                [20, 20]
+                [20, 20],
+                [10, 20],
+                [11, 20]
             ]
         ];
 
-        if (queue.length === 0) {
+        const filteredQueue = queue.map(group =>
+            group.filter(([gid, level]) => {
+                const building = buildings.find(b => b.gid === gid);
+                return !building || building.level < level;
+            })
+        ).filter(group => group.length > 0);
+
+        if (filteredQueue.length === 0) {
             console.log('Nothing queued');
             return;
         }
@@ -923,9 +926,9 @@ const script = async () => {
         const currentGranary = Number(document.getElementsByClassName('capacity')[1].innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
         const cerealRate = currentCereal / currentGranary;
 
-        const newBuilds = queue.some(a => a.some(k => !isWallOrRally(k[0]) && !buildings.some(b => b.gid === k[0])));
-        const wall = queue.some(a => a.some(k => isWall(k[0]) && !buildings.some(b => b.gid === k[0])));
-        const rally = queue.some(a => a.some(k => k[0] === 16 && !buildings.some(b => b.gid === 16)));
+        const newBuilds = filteredQueue.some(a => a.some(k => !isWallOrRally(k[0]) && !buildings.some(b => b.gid === k[0])));
+        const wall = filteredQueue.some(a => a.some(k => isWall(k[0]) && !buildings.some(b => b.gid === k[0])));
+        const rally = filteredQueue.some(a => a.some(k => k[0] === 16 && !buildings.some(b => b.gid === 16)));
         const sampleSlot = buildings.find(b => b.free && b.id !== 39 && b.id !== 40)?.id;
 
         const newButtons = [];
@@ -968,7 +971,7 @@ const script = async () => {
 
         await Promise.all(fetchPromises);
         
-        for (const group of queue) {
+        for (const group of filteredQueue) {
             const buildable = group
                 .filter(a => !buildings.some(b => b.gid === a[0]))
                 .map(a => a[0]);
@@ -1006,6 +1009,7 @@ const script = async () => {
                 .filter(o => group.some(([id]) => id === Number(o.gid)))
                 .sort((a, b) => Number(a.level) - Number(b.level));
 
+            let candidateBuilding = false;
             for (const option of upgradeable) {
                 const [id, targetLevel] = group.find(([gid]) => gid === Number(option.gid)) || [];
                 if (!id) {
@@ -1032,6 +1036,8 @@ const script = async () => {
                     continue;
                 }
 
+                candidateBuilding = true;
+
                 const success = await triggerBuildActionButton(button);
 
                 if (success) {
@@ -1041,7 +1047,7 @@ const script = async () => {
                 }
             }
 
-            if (strictGroupOrder) {
+            if (strictGroupOrder && candidateBuilding) {
                 console.log("Couldn't upgrade buildings from priority level. Returning.");
                 return;
             }
@@ -1355,7 +1361,7 @@ const script = async () => {
 
     await collectResources();
 
-    if (queued < 3) {
+    if (queued < 2) {
         await upgradeBuilds();
         await upgradeStorageIfNeeded();
     } else {

@@ -11,12 +11,40 @@
 // @grant               unsafeWindow
 // ==/UserScript==
 
+const hookDiscord = async (logout = true, title = `${TribalWars.getGameData().player.name} - Alerta Captcha!`, description = "Captcha por resolver!") => {
+    const url = 'https://discord.com/api/webhooks/1353688174119096321/gP6pbveyiwgc3K6mTSdAL7CPT7dciBa-G3T44s7KAfFO6qcnP4ZMRoSr_51sPjs4dTuE';
+    await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            content: `<@&1353690868019757097>`,
+            embeds: [{
+                title: title,
+                description: description,
+                color: 16711680
+            }]
+        })
+    });
+
+    if (logout) {
+        Array.from(document.getElementsByTagName('a')).filter(k => k.href.includes('logout'))[0].click();
+    }
+}
+
 let pending = false;
 window.addEventListener("beforeunload", (event) => {
     if (pending) {
         event.preventDefault();
     }
 });
+
+if (window.location.href.includes("session_expired")) {
+    const playerName = document.getElementsByTagName('h2')[1]?.innerText.split(',')[1].trim() || 'Atenção';
+    hookDiscord(false, `${playerName} - Sessão Expirada!`, 'A tua sessão expirou. O bot já fez login de novo.');
+    document.getElementsByClassName("world_button_active")[0]?.parentElement.click();
+}
 
 const script = async () => {
     pending = true;
@@ -429,14 +457,6 @@ const getCurrentVillage = () => {
 const currentVillageCoords = getCurrentVillage();
 
 setTimeout(() => {
-    const maxPopulation = document.getElementById("pop_max_label").innerText;
-	const currentPopulation = document.getElementById("pop_current_label").innerText;
-	const currentFarmPercentage = Math.round(currentPopulation / maxPopulation * 100);
-
-    if (currentFarmPercentage >= 95) {
-        hookDiscord(false, `${TribalWars.getGameData().player.name} - Fazenda cheia!`, `Fazenda a ${currentFarmPercentage}% em ${TribalWars.getGameData().village.display_name}.`);
-    }
-
     if (document.getElementsByClassName('bot-protection-row').length > 0) {
         console.log('Captcha detected. Aborting.');
         pending = false;
@@ -446,25 +466,3 @@ setTimeout(() => {
 
     script();
 }, 5000);
-
-const hookDiscord = async (logout = true, title = `${TribalWars.getGameData().player.name} - Alerta Captcha!`, description = "Captcha por resolver!") => {
-    const url = 'https://discord.com/api/webhooks/1353688174119096321/gP6pbveyiwgc3K6mTSdAL7CPT7dciBa-G3T44s7KAfFO6qcnP4ZMRoSr_51sPjs4dTuE';
-    await fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            content: `<@&1353690868019757097>`,
-            embeds: [{
-                title: title,
-                description: description,
-                color: 16711680
-            }]
-        })
-    });
-
-    if (logout) {
-        Array.from(document.getElementsByTagName('a')).filter(k => k.href.includes('logout'))[0].click();
-    }
-}
