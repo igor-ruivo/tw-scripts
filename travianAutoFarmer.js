@@ -23,10 +23,10 @@ const script = async () => {
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
     const SEND_TIME_TRIP = 1000 * 60 * 10;
     const TIME_IN_EACH_VILLAGE = 20 * 1000;
-    const blockCerealWhenNotNeeded = true;
+    const blockCerealWhenNotNeeded = false;
     const maxPopToFarm = 50;
     const minHeroHealth = 30;
-    const maxAnimalCount = 20;
+    const maxAnimalCount = 30;
     const playAd = false;
 
     const recruit = async (troopConfig) => {
@@ -321,7 +321,7 @@ const script = async () => {
 
         const villageParser = new DOMParser();
         const villageDoc = villageParser.parseFromString(villageText, 'text/html');
-        const horseCount = Number(Array.from(villageDoc.getElementById('troops').querySelectorAll("tbody tr")).find(row => row.querySelector(".un")?.textContent.trim().startsWith("Equites Impera"))?.querySelector(".num")?.textContent.trim() ?? '0');
+        const horseCount = Number(Array.from(villageDoc.getElementById('troops').querySelectorAll("tbody tr")).find(row => row.querySelector(".un")?.textContent.trim().startsWith("Theutates Thun"))?.querySelector(".num")?.textContent.trim() ?? '0');
 
         if (horseTroopCount > horseCount) {
             console.log('Wont try to send attack. Not enough troops');
@@ -457,7 +457,7 @@ const script = async () => {
                     const url = `${window.location.origin}/build.php?gid=16&tt=2`;
 
                     const formData = new URLSearchParams();
-                    formData.append('troop[t5]', horseTroopCount);
+                    formData.append('troop[t4]', horseTroopCount);
                     formData.append('troop[t11]', '');
                     formData.append('villagename', '');
                     formData.append('x', selectedFarm[0]);
@@ -487,7 +487,7 @@ const script = async () => {
                     }
 
                     const actualTroopsBeingSent = document.getElementById('troopSendForm');
-                    if (Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t5]"')[0].value) !== horseTroopCount) {
+                    if (Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t4]"')[0].value) !== horseTroopCount) {
                         console.log('Not enough troops to attack player.');
                         return;
                     }
@@ -510,8 +510,8 @@ const script = async () => {
                     sendFormData.append('troops[0][t1]', '0');
                     sendFormData.append('troops[0][t2]', '0');
                     sendFormData.append('troops[0][t3]', '0');
-                    sendFormData.append('troops[0][t4]', '0');
-                    sendFormData.append('troops[0][t5]', horseTroopCount);
+                    sendFormData.append('troops[0][t5]', '0');
+                    sendFormData.append('troops[0][t4]', horseTroopCount);
                     sendFormData.append('troops[0][t6]', '0');
                     sendFormData.append('troops[0][t7]', '0');
                     sendFormData.append('troops[0][t8]', '0');
@@ -559,7 +559,7 @@ const script = async () => {
 
         const heroIsInVillage = villageDoc.getElementById('troops').getElementsByClassName('uhero').length > 0;
         const troopCount = Number(Array.from(villageDoc.getElementById('troops').querySelectorAll("tbody tr")).find(row => row.querySelector(".un")?.textContent.trim().startsWith("Legio"))?.querySelector(".num")?.textContent.trim() ?? '0');
-        const horseCount = Number(Array.from(villageDoc.getElementById('troops').querySelectorAll("tbody tr")).find(row => row.querySelector(".un")?.textContent.trim().startsWith("Equites Impera"))?.querySelector(".num")?.textContent.trim() ?? '0');
+        const horseCount = Number(Array.from(villageDoc.getElementById('troops').querySelectorAll("tbody tr")).find(row => row.querySelector(".un")?.textContent.trim().startsWith("Theutates Thun"))?.querySelector(".num")?.textContent.trim() ?? '0');
 
         const useHorses = horseTroopCount <= horseCount;
 
@@ -641,7 +641,7 @@ const script = async () => {
                     formData.append('troop[t1]', !animals ? farmTroopCount : '');
                 }
                 if (useHorses) {
-                    formData.append('troop[t5]', !animals ? horseTroopCount : '');
+                    formData.append('troop[t4]', !animals ? horseTroopCount : '');
                 }
                 formData.append('troop[t11]', animals ? 1 : '');
                 formData.append('villagename', '');
@@ -668,7 +668,7 @@ const script = async () => {
                 }
 
                 const actualTroopsBeingSent = document.getElementById('troopSendForm');
-                if ((!animals && (useHorses && Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t5]"')[0].value) !== horseTroopCount || !useHorses && Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t1]"')[0].value) !== farmTroopCount)) || (animals && Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t11]"')[0].value) !== 1)) {
+                if ((!animals && (useHorses && Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t4]"')[0].value) !== horseTroopCount || !useHorses && Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t1]"')[0].value) !== farmTroopCount)) || (animals && Number(actualTroopsBeingSent.querySelectorAll('[name="troops[0][t11]"')[0].value) !== 1)) {
                     console.log('Not enough troops.');
                     return;
                 }
@@ -691,8 +691,8 @@ const script = async () => {
                 sendFormData.append('troops[0][t1]', (!useHorses && !animals) ? farmTroopCount : '0');
                 sendFormData.append('troops[0][t2]', '0');
                 sendFormData.append('troops[0][t3]', '0');
-                sendFormData.append('troops[0][t4]', '0');
-                sendFormData.append('troops[0][t5]', (useHorses && !animals) ? horseTroopCount : '0');
+                sendFormData.append('troops[0][t5]', '0');
+                sendFormData.append('troops[0][t4]', (useHorses && !animals) ? horseTroopCount : '0');
                 sendFormData.append('troops[0][t6]', '0');
                 sendFormData.append('troops[0][t7]', '0');
                 sendFormData.append('troops[0][t8]', '0');
@@ -850,65 +850,419 @@ const script = async () => {
 
         const queue = [
             [
-                [10, 1],
-                [11, 1],
-                [16, 1],
-                [31, 1],
-                [23, 1],
-                [18, 1],
-                [15, 3],
-                [17, 1],
-                [1, 5],
-                [2, 5],
-                [3, 5],
-                [4, 1]
+                {
+                    gid: 3,
+                    level: 2,
+                    focus: true,
+                    ammount: 1
+                }
             ],
             [
-                [13, 3],
-                [22, 5],
-                [19, 3],
-                [20, 5],
-                [10, 5],
-                [11, 5]
+                {
+                    gid: 15,
+                    level: 3
+                }
             ],
             [
-                [15, 5]
+                {
+                    gid: 2,
+                    level: 2,
+                    focus: true,
+                    ammount: 1
+                }
             ],
             [
-                [25, 10]
+                {
+                    gid: 10,
+                    level: 1
+                }
             ],
             [
-                [4, 5],
-                [24, 10],
-                [15, 20],
-                [1, 10],
-                [2, 10],
-                [3, 10],
-                [10, 15],
-                [11, 15]
+                {
+                    gid: 11,
+                    level: 1
+                }
             ],
             [
-                [5, 5],
-                [6, 5],
-                [7, 5],
-                [8, 5],
-                [9, 5],
-                [4, 10],
-                [10, 18],
-                [11, 18]
+                {
+                    gid: 17,
+                    level: 1
+                }
             ],
             [
-                [19, 20],
-                [20, 20],
-                [10, 20],
-                [11, 20]
+                {
+                    gid: 18,
+                    level: 1
+                }
+            ],
+            [
+                {
+                    gid: 23,
+                    level: 1,
+                    ammount: 1
+                }
+            ],
+            [
+                {
+                    gid: 4,
+                    level: 1
+                }
+            ],
+            [
+                {
+                    gid: 19,
+                    level: 3
+                }
+            ],
+            [
+                {
+                    gid: 1,
+                    level: 1
+                },
+                {
+                    gid: 2,
+                    level: 1
+                },
+                {
+                    gid: 3,
+                    level: 1
+                }
+            ],
+            [
+                {
+                    gid: 4,
+                    level: 2
+                }
+            ],
+            [
+                {
+                    gid: 3,
+                    level: 2
+                }
+            ],
+            [
+                {
+                    gid: 1,
+                    level: 2
+                }
+            ],
+            [
+                {
+                    gid: 2,
+                    level: 2
+                }
+            ],
+            [
+                {
+                    gid: 4,
+                    level: 3
+                }
+            ],
+            [
+                {
+                    gid: 4,
+                    level: 4,
+                    ammount: 1
+                }
+            ],
+            [
+                {
+                    gid: 22,
+                    level: 1
+                }
+            ],
+            [
+                {
+                    gid: 15,
+                    level: 5
+                }
+            ],
+            [
+                {
+                    gid: 23,
+                    level: 3,
+                    ammount: 1
+                }
+            ],
+            [
+                {
+                    gid: 13,
+                    level: 1
+                }
+            ],
+            [
+                {
+                    gid: 25,
+                    level: 1
+                }
+            ],
+            [
+                {
+                    gid: 3,
+                    level: 3
+                }
+            ],
+            [
+                {
+                    gid: 1,
+                    level: 3
+                }
+            ],
+            [
+                {
+                    gid: 2,
+                    level: 3
+                }
+            ],
+            [
+                {
+                    gid: 10,
+                    level: 3
+                }
+            ],
+            [
+                {
+                    gid: 11,
+                    level: 3
+                }
+            ],
+            [
+                {
+                    gid: 17,
+                    level: 3
+                }
+            ],
+            [
+                {
+                    gid: 33,
+                    level: 3
+                }
+            ],
+            [
+                {
+                    gid: 15,
+                    level: 7
+                }
+            ],
+            [
+                {
+                    gid: 1,
+                    level: 4,
+                    focus: true,
+                    ammount: 1
+                }
+            ],
+            [
+                {
+                    gid: 3,
+                    level: 4,
+                    focus: true,
+                    ammount: 1
+                }
+            ],
+            [
+                {
+                    gid: 2,
+                    level: 4,
+                    focus: true,
+                    ammount: 1
+                }
+            ],
+            [
+                {
+                    gid: 23,
+                    level: 10,
+                    ammount: 1
+                }
+            ],
+            [
+                {
+                    gid: 23,
+                    level: 6,
+                    ammount: 7
+                }
+            ],
+            [
+                {
+                    gid: 3,
+                    level: 4
+                }
+            ],
+            [
+                {
+                    gid: 1,
+                    level: 4
+                }
+            ],
+            [
+                {
+                    gid: 2,
+                    level: 4
+                }
+            ],
+            [
+                {
+                    gid: 4,
+                    level: 4
+                }
+            ],
+            [
+                {
+                    gid: 13,
+                    level: 3
+                }
+            ],
+            [
+                {
+                    gid: 22,
+                    level: 5
+                }
+            ],
+            [
+                {
+                    gid: 20,
+                    level: 1
+                }
+            ],
+            [
+                {
+                    gid: 4,
+                    level: 5,
+                    ammount: 1
+                }
+            ],
+            [
+                {
+                    gid: 8,
+                    level: 1
+                }
+            ],
+            [
+                {
+                    gid: 22,
+                    level: 10
+                }
+            ],
+            [
+                {
+                    gid: 21,
+                    level: 1
+                }
+            ],
+            [
+                {
+                    gid: 15,
+                    level: 12
+                }
+            ],
+            [
+                {
+                    gid: 24,
+                    level: 1
+                }
+            ],
+            [
+                {
+                    gid: 10,
+                    level: 7
+                }
+            ],
+            [
+                {
+                    gid: 11,
+                    level: 7
+                }
+            ],
+            [
+                {
+                    gid: 10,
+                    level: 8
+                }
+            ],
+            [
+                {
+                    gid: 25,
+                    level: 3
+                }
+            ],
+            [
+                {
+                    gid: 18,
+                    level: 5
+                }
+            ],
+            [
+                {
+                    gid: 17,
+                    level: 7
+                }
+            ],
+            //party
+            [
+                {
+                    gid: 23,
+                    level: 7
+                }
+            ],
+            [
+                {
+                    gid: 3,
+                    level: 5
+                }
+            ],
+            [
+                {
+                    gid: 1,
+                    level: 5
+                }
+            ],
+            [
+                {
+                    gid: 2,
+                    level: 5
+                }
+            ],
+            [
+                {
+                    gid: 4,
+                    level: 5
+                }
+            ],
+            [
+                {
+                    gid: 20,
+                    level: 3
+                }
+            ],
+            [
+                {
+                    gid: 17,
+                    level: 12
+                }
+            ],
+            //party
+            [
+                {
+                    gid: 25,
+                    level: 9
+                }
+            ],
+            //party
+            [
+                {
+                    gid: 25,
+                    level: 10
+                }
             ]
         ];
 
         const filteredQueue = queue.map(group =>
-            group.filter(([gid, level]) => {
-                const building = buildings.find(b => b.gid === gid);
-                return !building || building.level < level;
+            group.filter(e => {
+                let ammount = e.ammount || 1;
+
+                const fulfilled = buildings.filter(b => b.gid === e.gid && b.level >= e.level);
+
+                return fulfilled.length < ammount;
             })
         ).filter(group => group.length > 0);
 
@@ -926,9 +1280,9 @@ const script = async () => {
         const currentGranary = Number(document.getElementsByClassName('capacity')[1].innerText.replaceAll(/[^\d.,-]/g, '').replaceAll(' ', '').replaceAll(',', '').trim());
         const cerealRate = currentCereal / currentGranary;
 
-        const newBuilds = filteredQueue.some(a => a.some(k => !isWallOrRally(k[0]) && !buildings.some(b => b.gid === k[0])));
-        const wall = filteredQueue.some(a => a.some(k => isWall(k[0]) && !buildings.some(b => b.gid === k[0])));
-        const rally = filteredQueue.some(a => a.some(k => k[0] === 16 && !buildings.some(b => b.gid === 16)));
+        const newBuilds = filteredQueue.some(a => a.some(k => !isWallOrRally(k.gid) && !buildings.some(b => b.gid === k.gid)));
+        const wall = filteredQueue.some(a => a.some(k => isWall(k.gid) && !buildings.some(b => b.gid === k.gid)));
+        const rally = filteredQueue.some(a => a.some(k => k.gid === 16 && !buildings.some(b => b.gid === 16)));
         const sampleSlot = buildings.find(b => b.free && b.id !== 39 && b.id !== 40)?.id;
 
         const newButtons = [];
@@ -973,8 +1327,11 @@ const script = async () => {
         
         for (const group of filteredQueue) {
             const buildable = group
-                .filter(a => !buildings.some(b => b.gid === a[0]))
-                .map(a => a[0]);
+                .filter(a => {
+                    const count = buildings.filter(b => b.gid === a.gid).length;
+                    return count < (a.ammount || 1);
+                })
+                .map(a => a.gid);
 
             for (const build of buildable) {
                 const slot = build === 16 ? 39 : isWall(build) ? 40 : buildings.find(b => b.free && b.id !== 39 && b.id !== 40)?.id;
@@ -1006,11 +1363,14 @@ const script = async () => {
             }
 
             const upgradeable = options
-                .filter(o => group.some(([id]) => id === Number(o.gid)))
-                .sort((a, b) => Number(a.level) - Number(b.level));
+                .filter(o => group.some(a => a.id === Number(o.gid)))
+                .sort((a, b) => {
+                    const shouldReverse = group.some(d => d.id === Number(a.gid) && d.flag === true);
+                    return (Number(a.level) - Number(b.level)) * (shouldReverse ? -1 : 1);
+                });
 
             for (const option of upgradeable) {
-                const [id, targetLevel] = group.find(([gid]) => gid === Number(option.gid)) || [];
+                const [id, targetLevel] = group.find(d => d.gid === Number(option.gid)) || [];
                 if (!id) {
                     continue;
                 }
@@ -1056,22 +1416,28 @@ const script = async () => {
     const tradeBetweenVillages = async () => {
         const helpingSystem = [
             {
-                sender: "-24|-50",
-                saveStoragePercentage: 10,
+                sender: "-41|-20",
+                saveStoragePercentage: 0,
                 receivers: [
                     {
-                        village: "-21|-46",
-                        did: "25597",
-                        fillStoragePercentage: 33,
-                        fillGranaryPercentage: 33,
-                        minimumToSend: 1000
-                    },
-                    {
-                        village: "-21|-47",
-                        did: "27261",
+                        village: "-44|-21",
+                        did: "20104",
                         fillStoragePercentage: 80,
                         fillGranaryPercentage: 50,
-                        minimumToSend: 300
+                        minimumToSend: 500
+                    }
+                ]
+            },
+            {
+                sender: "-45|-19",
+                saveStoragePercentage: 0,
+                receivers: [
+                    {
+                        village: "-44|-21",
+                        did: "20104",
+                        fillStoragePercentage: 80,
+                        fillGranaryPercentage: 50,
+                        minimumToSend: 500
                     }
                 ]
             }
@@ -1334,6 +1700,7 @@ const script = async () => {
     } else {
         if (nextTick < Date.now()) {
             localStorage.setItem('nextTick', Date.now() + TIME_IN_EACH_VILLAGE);
+            pending = false;
             window.location.href = `${window.location.origin}/dorf2.php${villages[(currentVillageIndex + 1) % villages.length]}`;
         }
     }
@@ -1375,18 +1742,18 @@ const script = async () => {
             id: 19,
             troopId: 't3',
             troopCount: 1,
-            timeout: 2 * 60 * 1000 + 30 * 1000,
+            timeout: 6 * 60 * 1000,
             villages: [
-                [-13, 87]
+                [-44, -21]
             ]
-        }),
-        recruit({
+        }),*/
+        /*recruit({
             id: 20,
-            troopId: 't5',
+            troopId: 't4',
             troopCount: 1,
-            timeout: 2 * 60 * 1000 + 30 * 1000,
+            timeout: 5 * 60 * 1000,
             villages: [
-                [-13, 87]
+                [-44, -21]
             ]
         }),*/
     ]);
@@ -1433,7 +1800,7 @@ const script = async () => {
         return acc;
     }, {});
 
-    await tradeBetweenVillages();
+    //await tradeBetweenVillages();
 
     pending = false;
     console.log(`Reloading in ${TIME_IN_EACH_VILLAGE / 1000}s.`);
