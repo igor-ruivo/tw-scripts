@@ -53,7 +53,13 @@ let clickedTask = {};
 
 	setTimeout(function () {
 		nextIteration();
+		console.log("Reload dentro de " + Math.round(delay / 1000) + " segundos...");
 	}, offsetTimeInMillis * 3);
+
+	setTimeout(function () {
+		const nextVillageButton = document.getElementById("village_switch_right");
+		nextVillageButton ? nextVillageButton.click() : window.location.reload(true);
+	}, delay + offsetTimeInMillis * 3);
 })();
 
 function getDate() {
