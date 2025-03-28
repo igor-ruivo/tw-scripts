@@ -926,9 +926,7 @@ const script = async () => {
                 {
                     gid: 3,
                     level: 1
-                }
-            ],
-            [
+                },
                 {
                     gid: 4,
                     level: 2
@@ -1256,13 +1254,14 @@ const script = async () => {
             ]
         ];
 
+        const isResource = (gid) => gid === 1 || gid === 2 || gid === 3 || gid === 4;
         const filteredQueue = queue.map(group =>
             group.filter(e => {
                 let ammount = e.ammount || 1;
 
                 const fulfilled = buildings.filter(b => b.gid === e.gid && b.level >= e.level);
 
-                return fulfilled.length < ammount;
+                return ammount > fulfilled.length || (isResource(e.gid) && !e.focus && buildings.some(j => j.gid === e.gid && j.level < e.level));
             })
         ).filter(group => group.length > 0);
 
@@ -1328,6 +1327,10 @@ const script = async () => {
         for (const group of filteredQueue) {
             const buildable = group
                 .filter(a => {
+                    if (isResource(a.gid)) {
+                        return false;
+                    }
+
                     const count = buildings.filter(b => b.gid === a.gid).length;
                     return count < (a.ammount || 1);
                 })
@@ -1363,19 +1366,19 @@ const script = async () => {
             }
 
             const upgradeable = options
-                .filter(o => group.some(a => a.id === Number(o.gid)))
+                .filter(o => group.some(a => a.gid === Number(o.gid)))
                 .sort((a, b) => {
-                    const shouldReverse = group.some(d => d.id === Number(a.gid) && d.flag === true);
+                    const shouldReverse = group.some(d => d.gid === Number(a.gid) && d.focus === true);
                     return (Number(a.level) - Number(b.level)) * (shouldReverse ? -1 : 1);
                 });
 
             for (const option of upgradeable) {
-                const [id, targetLevel] = group.find(d => d.gid === Number(option.gid)) || [];
-                if (!id) {
+                const target = group.find(d => d.gid === Number(option.gid));
+                if (!target) {
                     continue;
                 }
 
-                const isCereal = id === 4;
+                const isCereal = target.gid === 4;
 
                 if (blockCerealWhenNotNeeded && isCereal && cerealForProduction > 10/* && cerealRate > 0.25*/) {
                     continue;
@@ -1391,7 +1394,7 @@ const script = async () => {
                 const match = button.value.match(/\d+$/);
                 const nextLevel = match ? parseInt(match[0], 10) : ((1 + Number(upgradeButton.currentTitleLevel)) ?? Infinity);
 
-                if (nextLevel > targetLevel) {
+                if (nextLevel > target.level) {
                     continue;
                 }
 
@@ -1720,7 +1723,7 @@ const script = async () => {
                 free: e.classList.contains('g0'),
                 gid: Number(e.parentElement.getAttribute('data-gid') ?? e.getAttribute('data-gid')),
                 id: Number(e.parentElement.getAttribute('data-aid') ?? e.getAttribute('data-aid')),
-                level: Number(e.getElementsByClassName('labelLayer')[0]?.innerText || '0') + Number(e.classList.contains('underConstruction') ? 1 : 0)
+                level: Number(e.getElementsByClassName('labelLayer')[0]?.innerText || '0') + Number(e.classList.contains('underConstruction') ? 1 : 0) + Number(e.children[0].classList.contains('underConstruction') ? 1 : 0)
             }))).flat();
 
     await collectResources();
