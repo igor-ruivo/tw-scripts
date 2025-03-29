@@ -82,7 +82,7 @@ const script = async () => {
         const heroTxt = await heroSearch.text();
         const heroHP = Number(heroTxt.split('{\"health\":')[1].split(',')[0]);
 
-        if (heroHP < 30) {
+        if (heroHP < minHeroHealth) {
             console.log(`Hero HP too low to adventure: ${heroHP}%`);
             return;
         }
@@ -1687,6 +1687,112 @@ const script = async () => {
         }
     }
 
+    const sleepKey = 'travian_sleep';
+
+    const login = () => {
+        const emailInput = document.querySelector('input[name="name"]');
+        const passwordInput = document.querySelector('input[name="password"]');
+
+        emailInput.value = '';
+        passwordInput.value = '';
+
+        document.querySelector('.textButtonV1')?.click();
+    }
+
+    if (window.location.href.includes('/logout')) {
+        pending = false;
+        const sleepTime = localStorage.getItem(sleepKey);
+        if (!sleepTime) {
+            login()
+        }
+
+        const currDate = Date.now();
+        if (currDate >= sleepTime) {
+            login()
+        }
+
+        console.log('Reload in 60s.');
+        setTimeout(() => {
+            window.location.reload(true);
+        }, 60 * 1000);
+    }
+
+    if (window.location.href.includes('dorf1.php') || window.location.href.includes('dorf2.php')) {
+        const nextOrder = document.querySelector('.buildDuration>.timer');
+        const query = `
+            query {
+                ownPlayer {
+                    hero {
+                        adventures {
+                            mapId
+                            x
+                            y
+                            place
+                            difficulty
+                            travelingDuration
+                        }
+                        status {
+                            status
+                            inOasis {
+                                belongsTo {
+                                    mapId
+                                    name
+                                }
+                            }
+                            inVillage {
+                                id
+                                mapId
+                                name
+                                type
+                            }
+                            arrivalAt
+                            arrivalIn
+                            onWayTo {
+                                id
+                                x
+                                y
+                                type
+                                village {
+                                    mapId
+                                    name
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        `;
+
+        const adventuresReq = await fetch(`${window.location.origin}/api/v1/graphql`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                query: query
+            })
+        });
+
+        const adventures = await adventuresReq.json();
+
+        const heroStatus = adventures.data.ownPlayer.hero.status;
+
+        const heroSearch = await fetch(`${window.location.origin}/hero/attributes`);
+        const heroTxt = await heroSearch.text();
+        const heroHP = Number(heroTxt.split('{\"health\":')[1].split(',')[0]);
+
+        const heroTimeout = heroStatus.arrivalIn ? Number(heroStatus.arrivalIn) : heroHP < minHeroHealth ? 60 * 60 * 1000 : Infinity;
+        const buildTimeout = nextOrder ? Number(nextOrder.getAttribute('value')) : Infinity;
+
+        if (heroTimeout !== Infinity && buildTimeout !== Infinity) {
+            const waitTime = Math.min(heroTimeout, buildTimeout) * 1000;
+
+            if (waitTime > 10 * 60 * 1000) {
+                localStorage.setItem(sleepKey, Date.now() + waitTime - 60 * 1000);
+                pending = false;
+                Travian.api('auth/logout');
+            }
+        }
+    }
+
     const villages = Array.from(document.getElementsByClassName('listEntry village')).map(e => e.querySelector('a').getAttribute('href'));
     const activeVillage = document.querySelector('.listEntry.village.active');
     const activeVillageHref = activeVillage.querySelector('a').getAttribute('href');
@@ -1728,7 +1834,7 @@ const script = async () => {
 
     await collectResources();
 
-    if (queued < 2) {
+    if (queued < 1) {
         await upgradeBuilds();
         await upgradeStorageIfNeeded();
     } else {
